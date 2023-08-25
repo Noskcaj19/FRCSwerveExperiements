@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import frc.robot.ShuffleHelper.ShuffleUtil;
 import frc.robot.subsystems.SwerveModule;
 
 /**
@@ -37,12 +38,12 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
-    swerve = new SwerveModule(12,
-        13,
+    swerve = new SwerveModule(13,
+        12,
         3,
         false,
         false,
-        294);
+        178.6+45+45);
 
     controller = new XboxController(0);
 
@@ -60,6 +61,9 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     rotation = controller.getRightX();
+    var rotationDeg = map(rotation, -1, 1,-180, 180);
+    // swerve.m_driveMotor.set(.1);
+    ShuffleUtil.set("Debug", "FooBaz", 3.14);
 
     // rotation = MathUtil.clamp(rotation + (controller.getRightX() * 0.01570796),
     // -Math.PI, Math.PI);
@@ -70,14 +74,14 @@ public class Robot extends TimedRobot {
     // rotation = -Math.PI;
     // }
 
-    commandedRotationEntry.setDouble(map(rotation, -1, 1,-Math.PI, Math.PI));
+    commandedRotationEntry.setDouble(rotationDeg);
 
-    // var drivePercentage = controller.getLeftY();
-    System.out.println(rotation);
+    var drivePercentage = controller.getLeftY();
+    // System.out.println(rotation);
 
-    // var driveSpeed = drivePercentage * Constants.DriveConstants.kMaxVelocityMetersPerSecond;
+    var driveSpeed = drivePercentage *Constants.DriveConstants.kMaxVelocityMetersPerSecond;
     swerve.setDesiredState(
-        new SwerveModuleState(0, new Rotation2d(map(rotation, -1, 1, -Math.PI, Math.PI))));
+        new SwerveModuleState(driveSpeed, Rotation2d.fromDegrees(rotationDeg)));
   }
 
   double map(double x, double in_min, double in_max, double out_min, double out_max) {

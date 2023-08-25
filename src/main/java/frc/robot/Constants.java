@@ -69,7 +69,7 @@ public final class Constants {
     // public static final double kTurningEncoderDistancePerPulse =
     // // Assumes the encoders are on a 1:1 reduction with the module shaft.
     // (2 * Math.PI) / (double) kEncoderCPR;
-    public static final double kTurningEncoderDegreesPerPulse = 2. * Math.PI * kModuleType.getSteerReduction();
+    public static final double kTurningEncoderDegreesPerPulse = Math.toDegrees(2. * Math.PI * kModuleType.getSteerReduction());
 
     // public static final double kPModuleTurningController = 1;
 

@@ -4,7 +4,11 @@
 
 package frc.robot;
 
+import java.util.stream.Stream;
+
 import edu.wpi.first.wpilibj.RobotBase;
+import frc.robot.ShuffleHelper.ShuffleUtil;
+// import frc.robot.ShuffleHelper.Test;
 
 /**
  * Do NOT add any static variables to this class, or any initialization at all. Unless you know what
@@ -20,6 +24,9 @@ public final class Main {
    * <p>If you change your main robot class, change the parameter type.
    */
   public static void main(String... args) {
+    // ShuffleUtil.set("null", "null", "null");
+    // Stream.of(Test.class.getAnnotations()).forEach(v-> System.out.println(v.annotationType()));
+    // Test.class.
     RobotBase.startRobot(Robot::new);
   }
 }

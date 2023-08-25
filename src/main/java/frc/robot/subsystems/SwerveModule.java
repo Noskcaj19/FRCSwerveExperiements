@@ -13,10 +13,14 @@ import com.ctre.phoenix.sensors.SensorTimeBase;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import com.revrobotics.SparkMaxPIDController.AccelStrategy;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.SparkMaxPIDController;
+import com.revrobotics.CANSparkMax.ControlType;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -28,21 +32,30 @@ import frc.robot.Constants;
 import frc.robot.Constants.ModuleConstants;
 
 public class SwerveModule {
-  private final CANSparkMax m_driveMotor;
-  private final CANSparkMax m_turningMotor;
+  public final CANSparkMax m_driveMotor;
+  public final CANSparkMax m_turningMotor;
 
   private final RelativeEncoder m_driveEncoder;
   private final RelativeEncoder m_integratedTurningEncoder;
   private final CANCoder m_absoluteEncoder;
 
-  private final PIDController m_drivePIDController = new PIDController(.01, 0, 0);
+  private final PIDController m_drivePIDController = new PIDController(.1, 0, 0);
 
+  private final SimpleMotorFeedforward m_turnFF = new SimpleMotorFeedforward(0.13943,0.39686,0.015295);
+
+  // private final PIDController m_turningPIDController = new PIDController(
+  // 0.13, 0, 0);
   // Using a TrapezoidProfile PIDController to allow for smooth turning
-  private final ProfiledPIDController m_turningPIDController = new ProfiledPIDController(
-       0.064059,0,0.0069,
-      new TrapezoidProfile.Constraints(
-          ModuleConstants.kMaxModuleAngularSpeedRadiansPerSecond,
-          ModuleConstants.kMaxModuleAngularAccelerationRadiansPerSecondSquared));
+  private final PIDController m_turningPIDController = new PIDController(
+      // 1.0, 0, 0.);
+      1.0 / (Math.PI / 2), 0, .0);
+  // private final ProfiledPIDController m_turningPIDController = new
+  // ProfiledPIDController(
+  // 0.064059,0,0.000,
+  // new TrapezoidProfile.Constraints(
+  // Math.toDegrees(ModuleConstants.kMaxModuleAngularSpeedRadiansPerSecond),
+  // Math.toDegrees(ModuleConstants.kMaxModuleAngularAccelerationRadiansPerSecondSquared)));
+  private SparkMaxPIDController pidController;
 
   /**
    * Constructs a SwerveModule.
@@ -59,9 +72,22 @@ public class SwerveModule {
       int turningEncoderId,
       boolean driveEncoderReversed,
       boolean turningEncoderReversed,
-      float magnetOffset) {
+      double magnetOffset) {
     m_driveMotor = new CANSparkMax(driveMotorId, MotorType.kBrushless);
     m_turningMotor = new CANSparkMax(turningMotorId, MotorType.kBrushless);
+    m_turningMotor.restoreFactoryDefaults();
+
+    m_absoluteEncoder = new CANCoder(turningEncoderId);
+
+    var config = new CANCoderConfiguration();
+    config.absoluteSensorRange = AbsoluteSensorRange.Signed_PlusMinus180;
+    config.initializationStrategy = SensorInitializationStrategy.BootToAbsolutePosition;
+    config.sensorTimeBase = SensorTimeBase.PerSecond;
+    config.magnetOffsetDegrees = magnetOffset;
+    config.sensorDirection = !turningEncoderReversed;
+
+    m_absoluteEncoder.configAllSettings(config, 250);
+    m_absoluteEncoder.setStatusFramePeriod(CANCoderStatusFrame.SensorData, 100, 250);
 
     // #region Motor controller setup
     m_driveMotor.setInverted(driveEncoderReversed);
@@ -90,33 +116,29 @@ public class SwerveModule {
     m_driveEncoder.setVelocityConversionFactor(positionConversionFactor / 60);
 
     m_integratedTurningEncoder = m_turningMotor.getEncoder();
-    Shuffleboard.getTab("Debug").addDouble("Integrated encoder", () -> m_integratedTurningEncoder.getPosition());
-    // m_integratedTurningEncoder.setPositionConversionFactor(1);
-    // m_integratedTurningEncoder.setVelocityConversionFactor(1 / 60);
 
-    m_integratedTurningEncoder.setPositionConversionFactor(ModuleConstants.kTurningEncoderDegreesPerPulse);
-    m_integratedTurningEncoder.setVelocityConversionFactor(ModuleConstants.kTurningEncoderDegreesPerPulse / 60);
-
-    m_absoluteEncoder = new CANCoder(turningEncoderId);
-
-    var config = new CANCoderConfiguration();
-    config.absoluteSensorRange = AbsoluteSensorRange.Signed_PlusMinus180;
-    config.initializationStrategy = SensorInitializationStrategy.BootToAbsolutePosition;
-    config.sensorTimeBase = SensorTimeBase.PerSecond;
-    config.magnetOffsetDegrees = magnetOffset;
-    config.sensorDirection = turningEncoderReversed;
-
-    m_absoluteEncoder.configAllSettings(config, 250);
-    m_absoluteEncoder.setStatusFramePeriod(CANCoderStatusFrame.SensorData, 100, 250);
+    m_integratedTurningEncoder
+        .setPositionConversionFactor(Math.toRadians(ModuleConstants.kTurningEncoderDegreesPerPulse));
+    m_integratedTurningEncoder
+        .setVelocityConversionFactor(Math.toRadians(ModuleConstants.kTurningEncoderDegreesPerPulse) / 60);
+    m_integratedTurningEncoder.setPosition(Math.toRadians(m_absoluteEncoder.getAbsolutePosition()));
 
     m_turningPIDController.enableContinuousInput(-Math.PI, Math.PI);
 
     Shuffleboard.getTab("Debug").addDouble("Turn Output Raw", () -> m_turningMotor.get());
     Shuffleboard.getTab("Debug").addDouble("Drive Output Raw", () -> m_driveMotor.get());
     Shuffleboard.getTab("Debug")
-        .addDouble("Measured rotation",
-            () -> m_absoluteEncoder.getAbsolutePosition())
-        .withWidget(BuiltInWidgets.kGyro);
+        .addDouble("Measured Abs rotation",
+            () -> m_absoluteEncoder.getAbsolutePosition());
+    Shuffleboard.getTab("Debug").addDouble("Integrated encoder", () -> m_integratedTurningEncoder.getPosition());
+
+    pidController = m_turningMotor.getPIDController();
+    pidController.setP(1.0);
+    pidController.setI(0.0);
+    pidController.setD(0.1);
+    // pidController.setFF(1.534);
+    // pidController.setOutputRange(-.5, .5);
+    // m_turningMotor.set
   }
 
   /**
@@ -126,7 +148,7 @@ public class SwerveModule {
    */
   public SwerveModuleState getState() {
     return new SwerveModuleState(
-        m_driveEncoder.getVelocity(), new Rotation2d(m_absoluteEncoder.getAbsolutePosition()));
+        m_driveEncoder.getVelocity(), Rotation2d.fromDegrees(m_absoluteEncoder.getAbsolutePosition()));
   }
 
   /**
@@ -136,7 +158,7 @@ public class SwerveModule {
    */
   public SwerveModulePosition getPosition() {
     return new SwerveModulePosition(
-        m_driveEncoder.getPosition(), new Rotation2d(m_absoluteEncoder.getAbsolutePosition()));
+        m_driveEncoder.getPosition(), Rotation2d.fromDegrees(m_absoluteEncoder.getAbsolutePosition()));
   }
 
   /**
@@ -146,20 +168,24 @@ public class SwerveModule {
    */
   public void setDesiredState(SwerveModuleState desiredState) {
     // Optimize the reference state to avoid spinning further than 90 degrees
-    // SwerveModuleState state = SwerveModuleState.optimize(desiredState,
-    //     new Rotation2d(m_absoluteEncoder.getAbsolutePosition()));
-    SwerveModuleState state= desiredState;
+    SwerveModuleState state = SwerveModuleState.optimize(desiredState,
+        Rotation2d.fromDegrees(m_absoluteEncoder.getAbsolutePosition()));
+    // SwerveModuleState state = desiredState;
 
     // Calculate the drive output from the drive PID controller.
-    final double driveOutput = m_drivePIDController.calculate(m_driveEncoder.getVelocity(), state.speedMetersPerSecond);
+    // final double driveOutput =
+    // m_drivePIDController.calculate(m_driveEncoder.getVelocity(),
+    // state.speedMetersPerSecond);
 
     // Calculate the turning motor output from the turning PID controller.
-    final double turnOutput = m_turningPIDController.calculate(map(m_absoluteEncoder.getAbsolutePosition(), -180, 180, -Math.PI, Math.PI),
-        state.angle.getRadians());
+    m_driveMotor.setVoltage((state.speedMetersPerSecond / Constants.DriveConstants.kMaxVelocityMetersPerSecond) * 12);
 
-    // Calculate the turning motor output from the turning PID controller.
-    // m_driveMotor.set(driveOutput);
-    m_turningMotor.set(turnOutput);
+    // 0.13943,0.39686,0.015295
+
+    // pidController.setReference(state.angle.getRadians(), ControlType.kPosition, 0, .234);
+    pidController.setReference(state.angle.getRadians(), ControlType.kPosition);
+    // m_turningMotor.set(m_turningPIDController.calculate(m_integratedTurningEncoder.getPosition(),
+    // state.angle.getRadians()));
   }
 
   double map(double x, double in_min, double in_max, double out_min, double out_max) {
