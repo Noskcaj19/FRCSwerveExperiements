@@ -25,6 +25,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.SuppliedValueWidget;
@@ -129,7 +130,7 @@ public class SwerveModule {
     Shuffleboard.getTab("Debug").addDouble("Drive Output Raw", () -> m_driveMotor.get());
     Shuffleboard.getTab("Debug")
         .addDouble("Measured Abs rotation",
-            () -> m_absoluteEncoder.getAbsolutePosition());
+            () -> Units.degreesToRadians(m_absoluteEncoder.getAbsolutePosition()));
     Shuffleboard.getTab("Debug").addDouble("Integrated encoder", () -> m_integratedTurningEncoder.getPosition());
 
     pidController = m_turningMotor.getPIDController();

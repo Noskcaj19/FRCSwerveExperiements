@@ -61,7 +61,7 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     rotation = controller.getRightX();
-    var rotationDeg = map(rotation, -1, 1,-180, 180);
+    var rotationRad = map(rotation, -1, 1,-Math.PI,Math.PI);
     // swerve.m_driveMotor.set(.1);
     ShuffleUtil.set("Debug", "FooBaz", 3.14);
 
@@ -74,14 +74,14 @@ public class Robot extends TimedRobot {
     // rotation = -Math.PI;
     // }
 
-    commandedRotationEntry.setDouble(rotationDeg);
+    commandedRotationEntry.setDouble(rotationRad);
 
     var drivePercentage = controller.getLeftY();
     // System.out.println(rotation);
 
     var driveSpeed = drivePercentage *Constants.DriveConstants.kMaxVelocityMetersPerSecond;
     swerve.setDesiredState(
-        new SwerveModuleState(driveSpeed, Rotation2d.fromDegrees(rotationDeg)));
+        new SwerveModuleState(driveSpeed, Rotation2d.fromRadians(rotationRad)));
   }
 
   double map(double x, double in_min, double in_max, double out_min, double out_max) {
