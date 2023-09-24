@@ -8,6 +8,7 @@ import com.revrobotics.REVPhysicsSim;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
@@ -43,15 +44,18 @@ public class Robot extends TimedRobot {
         3,
         false,
         false,
-        178.6+45+45);
+        178.6 + 45 + 45);
 
     controller = new XboxController(0);
-
-  
 
     commandedRotationEntry = Shuffleboard.getTab("Debug")
         .add("Commanded rotation", 0)
         .withWidget(BuiltInWidgets.kGyro).getEntry();
+  }
+
+  @Override
+  public void teleopInit() {
+    swerve.recalEncoders();
   }
 
   // radians
@@ -61,7 +65,9 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     rotation = controller.getRightX();
-    var rotationRad = map(rotation, -1, 1,-Math.PI,Math.PI);
+    var rotationRad = map(rotation, -1, 1, -Math.PI, Math.PI);
+    if (controller.getPOV() != -1)
+      rotationRad += Units.degreesToRadians(controller.getPOV());
     // swerve.m_driveMotor.set(.1);
     ShuffleUtil.set("Debug", "FooBaz", 3.14);
 
@@ -79,7 +85,7 @@ public class Robot extends TimedRobot {
     var drivePercentage = controller.getLeftY();
     // System.out.println(rotation);
 
-    var driveSpeed = drivePercentage *Constants.DriveConstants.kMaxVelocityMetersPerSecond;
+    var driveSpeed = drivePercentage * Constants.DriveConstants.kMaxVelocityMetersPerSecond;
     swerve.setDesiredState(
         new SwerveModuleState(driveSpeed, Rotation2d.fromRadians(rotationRad)));
   }

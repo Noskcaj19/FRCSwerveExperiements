@@ -6,6 +6,7 @@ public class ShuffleUtil {
     
 
     ShuffleUtil() {
+        // NetworkTableInstance.getDefault().getEntry("/Hey/Ho/Spagettio");
     }
 
     public static <T> void set(String tab, String name, T value) {
@@ -19,6 +20,7 @@ public class ShuffleUtil {
     }
 
     public static Object get(String tab, String name) {
-        return NetworkTableInstance.getDefault().getEntry("/"+tab+"/"+name).getValue();
+        return NetworkTableInstance.getDefault().getEntry("/Shuffleboard/"+tab+"/"+name).getValue();
     }
 }
+

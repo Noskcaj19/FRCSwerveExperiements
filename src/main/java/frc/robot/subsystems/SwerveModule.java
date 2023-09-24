@@ -31,6 +31,7 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.SuppliedValueWidget;
 import frc.robot.Constants;
 import frc.robot.Constants.ModuleConstants;
+import frc.robot.ShuffleHelper.ShuffleUtil;
 
 public class SwerveModule {
   public final CANSparkMax m_driveMotor;
@@ -42,7 +43,7 @@ public class SwerveModule {
 
   private final PIDController m_drivePIDController = new PIDController(.1, 0, 0);
 
-  private final SimpleMotorFeedforward m_turnFF = new SimpleMotorFeedforward(0.13943,0.39686,0.015295);
+  private final SimpleMotorFeedforward m_turnFF = new SimpleMotorFeedforward(0.13943, 0.39686, 0.015295);
 
   // private final PIDController m_turningPIDController = new PIDController(
   // 0.13, 0, 0);
@@ -57,6 +58,11 @@ public class SwerveModule {
   // Math.toDegrees(ModuleConstants.kMaxModuleAngularSpeedRadiansPerSecond),
   // Math.toDegrees(ModuleConstants.kMaxModuleAngularAccelerationRadiansPerSecondSquared)));
   private SparkMaxPIDController pidController;
+
+  private final TrapezoidProfile.Constraints m_turnConstraints = new TrapezoidProfile.Constraints(
+      Float.POSITIVE_INFINITY,
+      200*2);
+  private TrapezoidProfile.State m_lastProfiledReference = new TrapezoidProfile.State();
 
   /**
    * Constructs a SwerveModule.
@@ -126,12 +132,8 @@ public class SwerveModule {
 
     m_turningPIDController.enableContinuousInput(-Math.PI, Math.PI);
 
-    Shuffleboard.getTab("Debug").addDouble("Turn Output Raw", () -> m_turningMotor.get());
-    Shuffleboard.getTab("Debug").addDouble("Drive Output Raw", () -> m_driveMotor.get());
-    Shuffleboard.getTab("Debug")
-        .addDouble("Measured Abs rotation",
-            () -> Units.degreesToRadians(m_absoluteEncoder.getAbsolutePosition()));
-    Shuffleboard.getTab("Debug").addDouble("Integrated encoder", () -> m_integratedTurningEncoder.getPosition());
+    m_lastProfiledReference = new TrapezoidProfile.State(m_integratedTurningEncoder.getPosition(),
+        m_integratedTurningEncoder.getVelocity());
 
     pidController = m_turningMotor.getPIDController();
     pidController.setP(1.0);
@@ -139,7 +141,13 @@ public class SwerveModule {
     pidController.setD(0.1);
     // pidController.setFF(1.534);
     // pidController.setOutputRange(-.5, .5);
-    // m_turningMotor.set
+
+    Shuffleboard.getTab("Debug").addDouble("Turn Output Raw", () -> m_turningMotor.get());
+    Shuffleboard.getTab("Debug").addDouble("Drive Output Raw", () -> m_driveMotor.get());
+    Shuffleboard.getTab("Debug")
+        .addDouble("Measured Abs rotation",
+            () -> Units.degreesToRadians(m_absoluteEncoder.getAbsolutePosition()));
+    Shuffleboard.getTab("Debug").addDouble("Integrated encoder", () -> m_integratedTurningEncoder.getPosition());
   }
 
   /**
@@ -169,9 +177,9 @@ public class SwerveModule {
    */
   public void setDesiredState(SwerveModuleState desiredState) {
     // Optimize the reference state to avoid spinning further than 90 degrees
-    SwerveModuleState state = SwerveModuleState.optimize(desiredState,
-        Rotation2d.fromDegrees(m_absoluteEncoder.getAbsolutePosition()));
-    // SwerveModuleState state = desiredState;
+    // SwerveModuleState state = SwerveModuleState.optimize(desiredState,
+    // Rotation2d.fromDegrees(m_absoluteEncoder.getAbsolutePosition()));
+    SwerveModuleState state = desiredState;
 
     // Calculate the drive output from the drive PID controller.
     // final double driveOutput =
@@ -183,14 +191,26 @@ public class SwerveModule {
 
     // 0.13943,0.39686,0.015295
 
-    // pidController.setReference(state.angle.getRadians(), ControlType.kPosition, 0, .234);
-    pidController.setReference(state.angle.getRadians(), ControlType.kPosition);
+    // pidController.setReference(state.angle.getRadians(), ControlType.kPosition,
+    // 0, .234);
+    var goal = new TrapezoidProfile.State(state.angle.getRadians(), 0);
+    // m_lastProfiledReference = m_profile.calculate(0.02, goal, m_lastProfiledReference);
+    m_lastProfiledReference =
+        (new TrapezoidProfile(m_turnConstraints, goal, m_lastProfiledReference)).calculate(0.020);
+    ShuffleUtil.set("Debug", "Turn Goal", goal.position);
+    ShuffleUtil.set("Debug", "Turn Eval Setpoint", m_lastProfiledReference.position);
+    pidController.setReference(m_lastProfiledReference.position, ControlType.kPosition);
+    // pidController.setReference(state.angle.getRadians(), ControlType.kPosition);
     // m_turningMotor.set(m_turningPIDController.calculate(m_integratedTurningEncoder.getPosition(),
     // state.angle.getRadians()));
   }
 
   double map(double x, double in_min, double in_max, double out_min, double out_max) {
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+  }
+
+  public void recalEncoders() {
+    m_integratedTurningEncoder.setPosition(Units.degreesToRadians(m_absoluteEncoder.getAbsolutePosition()));
   }
 
   /** Zeroes all the SwerveModule encoders. */
