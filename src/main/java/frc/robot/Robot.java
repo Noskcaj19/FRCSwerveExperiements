@@ -4,27 +4,28 @@
 
 package frc.robot;
 
-import com.kauailabs.navx.frc.AHRS;
+import java.util.List;
+
 import com.revrobotics.REVPhysicsSim;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.trajectory.TrajectoryConfig;
+import edu.wpi.first.math.trajectory.TrajectoryGenerator;
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.drive.DifferentialDrive;
-import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.SPI;
-import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
 import frc.robot.Constants.DriveConstants;
-import frc.robot.ShuffleHelper.ShuffleUtil;
-import frc.robot.subsystems.SwerveModule;
+import frc.robot.subsystems.DriveSubsystem;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -37,38 +38,14 @@ import frc.robot.subsystems.SwerveModule;
  */
 public class Robot extends TimedRobot {
 
-  private SwerveModule m_frontLeft = new SwerveModule(15,
-      14,
-      20,
-      false,
-      false,
-      Rotation2d.fromRadians(1.5754));
-  private SwerveModule m_frontRight = new SwerveModule(13,
-      12,
-      19,
-      false,
-      false,
-      Rotation2d.fromRadians(-1.2026));
-  private SwerveModule m_backLeft = new SwerveModule(17,
-      16,
-      21,
-      false,
-      false,
-      Rotation2d.fromRadians(-2.6982));
-  private SwerveModule m_backRight = new SwerveModule(11,
-      10,
-      18,
-      false,
-      false,
-      Rotation2d.fromRadians(2.6952));
+  // private XboxController controller = new XboxController(0);
+  private Joystick stick = new Joystick(0);
+  private DriveSubsystem driveSubsystem = new DriveSubsystem();
 
-  private final SlewRateLimiter fwdSpeedLimiter = new SlewRateLimiter(4);
-  private final SlewRateLimiter strafeSpeedLimiter = new SlewRateLimiter(4);
-  private final SlewRateLimiter rotLimiter = new SlewRateLimiter(4);
-
-  private final AHRS gyro = new AHRS(SPI.Port.kMXP);
-
-  private XboxController controller = new XboxController(0);
+  @Override
+  public void robotPeriodic() {
+    CommandScheduler.getInstance().run();
+  }
 
   /**
    * This function is run when the robot is first started up and should be used
@@ -77,30 +54,41 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
+    driveSubsystem.setDefaultCommand(new RunCommand(() -> {
+      var fast = stick.getTrigger();
+      var fwdPercent = MathUtil.applyDeadband(-stick.getY(), 0.08) * (fast ? 1 : .5);
+      var strafePercent = MathUtil.applyDeadband(stick.getX(), 0.08) * (fast ? 1 : .5);
+      var rotPercent = MathUtil.applyDeadband(stick.getTwist(), 0.08) * (fast ? .5 : .15);
+
+      // var fast = controller.getRightBumper();
+      // var fwdPercent = MathUtil.applyDeadband(-controller.getLeftY(), 0.08) * (fast
+      // ? 1 : .5);
+      // var strafePercent = MathUtil.applyDeadband(controller.getLeftX(), 0.08) *
+      // (fast ? 1 : .5);
+      // var rotPercent = MathUtil.applyDeadband(controller.getRightX(),
+      // 0.08)*(fast?.5 : .15);
+
+      driveSubsystem.drivePercent(fwdPercent, strafePercent, rotPercent, true);
+
+      // if (controller.getBackButton()) {
+      // driveSubsystem.zeroYaw();
+      // }
+      // if (controller.getAButton())
+      // driveSubsystem.recalEncoders();
+    }, driveSubsystem));
+    driveSubsystem.recalEncoders();
   }
 
   @Override
   public void teleopInit() {
     // var x = new DifferentialDrive(null, null);
     // x.arcadeDrive(kDefaultPeriod, rotation, isAutonomous());
-    m_frontLeft.recalEncoders();
-    m_frontRight.recalEncoders();
-    m_backLeft.recalEncoders();
-    m_backRight.recalEncoders();
-    gyro.zeroYaw();
+
+    driveSubsystem.resetEncoders();
   }
 
-  // radians
-  double rotation = 0;
-
-  /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
-    rotation = controller.getRightX();
-    var rotationRad = map(rotation, -1, 1, -Math.PI, Math.PI);
-    if (controller.getPOV() != -1)
-      rotationRad += Units.degreesToRadians(controller.getPOV());
-    var rotationRadA = Rotation2d.fromRadians(rotationRad);
     // swerve.m_driveMotor.set(.1);
 
     // rotation = MathUtil.clamp(rotation + (controller.getRightX() * 0.01570796),
@@ -114,52 +102,71 @@ public class Robot extends TimedRobot {
 
     // commandedRotationEntry.setDouble(rotationRad);
 
-    var fwdPercent = MathUtil.applyDeadband(-controller.getLeftY(), 0.08);
-    var fwdSpeed = fwdSpeedLimiter.calculate(fwdPercent) * Constants.DriveConstants.kMaxVelocityMetersPerSecond;
+    // example: joystick
 
-    var strafePercent = MathUtil.applyDeadband(controller.getLeftX(), 0.08);
-    var strafeSpeed = strafeSpeedLimiter.calculate(strafePercent)
-        * Constants.DriveConstants.kMaxVelocityMetersPerSecond;
-
-    var rotPercent = MathUtil.applyDeadband(controller.getRightX(), 0.08);
-    var rotSpeed = (rotLimiter.calculate(rotPercent) * Constants.DriveConstants.kMaxAngularVelocityRadiansPerSecond)
-        / 1;
-
-        // example: joystick
-    // var stick = new Joystick(1);
-    // var swerveModuleStates = DriveConstants.m_kinematics.toSwerveModuleStates(new ChassisSpeeds(-stick.getY(), -stick.getX(), stick.getTwist()));
-    var fieldRelative = true;
-    var swerveModuleStates = DriveConstants.m_kinematics.toSwerveModuleStates(
-        fieldRelative
-            ? ChassisSpeeds.fromFieldRelativeSpeeds(
-                fwdSpeed, strafeSpeed, rotSpeed, gyro.getRotation2d().unaryMinus())
-            : new ChassisSpeeds(fwdSpeed, strafeSpeed, rotSpeed));
+    // ---
     // var swerveModuleStates = DriveConstants.m_kinematics.toSwerveModuleStates(
-    // new ChassisSpeeds(fwdSpeed, strafeSpeed, rotSpeed));
+    // new ChassisSpeeds(fwdSpeedJ, strafeSpeedJ, rotSpeedJ));
 
-    SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates,
-        Constants.DriveConstants.kMaxVelocityMetersPerSecond);
+    // var swerveModuleStates =
+    // DriveConstants.m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(
+    // new ChassisSpeeds(MathUtil.applyDeadband(-stick.getY(), 0.1),
+    // MathUtil.applyDeadband(stick.getX(), 0.1),
+    // MathUtil.applyDeadband(stick.getTwist(), 0.1)),
+    // gyro.getRotation2d().unaryMinus()));
 
     /*******
      *******/
-    // var flTheta = swerveModuleStates[1].angle.minus(m_frontLeft.getState().angle);
-    // var frTheta = swerveModuleStates[0].angle.minus(m_frontRight.getState().angle);
-    // var blTheta = swerveModuleStates[3].angle.minus(m_backLeft.getState().angle);
-    // var brTheta = swerveModuleStates[2].angle.minus(m_backRight.getState().angle);
 
+    // swerveModuleStates[1] =
+    // m_frontLeft.optimizeModuleState(swerveModuleStates[1]);
+    // swerveModuleStates[0]
+    // =m_frontRight.optimizeModuleState(swerveModuleStates[0]);
+    // swerveModuleStates[3] =m_backLeft.optimizeModuleState(swerveModuleStates[3]);
+    // swerveModuleStates[2]
+    // =m_backRight.optimizeModuleState(swerveModuleStates[2]);
 
-    // var errorNumerator = flTheta.getCos() + frTheta.getCos() + blTheta.getCos() + brTheta.getCos();
-    // var error = errorNumerator/4;
+    // System.out.println("target: " + swerveModuleStates[1].angle.getRadians() + "
+    // current " +m_frontLeft.getState().angle.getRadians() + " diff = " +
+    // swerveModuleStates[1].angle.minus(m_frontLeft.getState().angle).getRadians());
+    // var flTheta = Rotation2d.fromRadians(swerveModuleStates[1].angle.getRadians()
+    // % (Math.PI * 2.0))
+    // .minus(Rotation2d.fromRadians(m_frontLeft.getState().angle.getRadians() %
+    // (Math.PI * 2.0)));
+    // var frTheta = Rotation2d.fromRadians(swerveModuleStates[0].angle.getRadians()
+    // % (Math.PI * 2.0))
+    // .minus(Rotation2d.fromRadians(m_frontRight.getState().angle.getRadians() %
+    // (Math.PI * 2.0)));
+    // var blTheta = Rotation2d.fromRadians(swerveModuleStates[3].angle.getRadians()
+    // % (Math.PI * 2.0))
+    // .minus(Rotation2d.fromRadians(m_backLeft.getState().angle.getRadians() %
+    // (Math.PI * 2.0)));
+    // var brTheta = Rotation2d.fromRadians(swerveModuleStates[2].angle.getRadians()
+    // % (Math.PI * 2.0))
+    // .minus(Rotation2d.fromRadians(m_backRight.getState().angle.getRadians() %
+    // (Math.PI * 2.0)));
+
+    // // linear? cos? cos^3?
+    // var errorNumerator = Math.abs(flTheta.getCos()) + Math.abs(frTheta.getCos())
+    // + Math.abs(blTheta.getCos())
+    // + Math.abs(brTheta.getCos());
+    // var error = errorNumerator / 4;
+
+    // swerveModuleStates[0].speedMetersPerSecond *= error;
+    // swerveModuleStates[1].speedMetersPerSecond *= error;
+    // swerveModuleStates[2].speedMetersPerSecond *= error;
+    // swerveModuleStates[3].speedMetersPerSecond *= error;
     /*******
      *******/
-    m_frontLeft.setDesiredState(swerveModuleStates[1]);
-    m_frontRight.setDesiredState(swerveModuleStates[0]);
-    m_backLeft.setDesiredState(swerveModuleStates[3]);
-    m_backRight.setDesiredState(swerveModuleStates[2]);
 
-    if (controller.getBackButton()) {
-      gyro.zeroYaw();
-    }
+    // if (controller.getBackButton()) {
+    // gyro.zeroYaw();
+    // }
+  }
+
+  @Override
+  public void autonomousInit() {
+    getAutonomousCommand().schedule();
   }
 
   double map(double x, double in_min, double in_max, double out_min, double out_max) {
@@ -169,5 +176,46 @@ public class Robot extends TimedRobot {
   @Override
   public void simulationPeriodic() {
     REVPhysicsSim.getInstance().run();
+  }
+
+  public Command getAutonomousCommand() {
+    // Create config for trajectory
+    TrajectoryConfig config = new TrajectoryConfig(
+        Constants.AutoConstants.kMaxSpeedMetersPerSecond,
+        Constants.AutoConstants.kMaxAccelerationMetersPerSecondSquared)
+        // Add kinematics to ensure max speed is actually obeyed
+        .setKinematics(DriveConstants.kinematics);
+
+    // An example trajectory to follow. All units in meters.
+    Trajectory exampleTrajectory = TrajectoryGenerator.generateTrajectory(
+        // Start at the origin facing the +X direction
+        new Pose2d(0, 0, new Rotation2d(0)),
+        // Pass through these two interior waypoints, making an 's' curve path
+        List.of(new Translation2d(1, 1), new Translation2d(2, -1)),
+        // End 3 meters straight ahead of where we started, facing forward
+        new Pose2d(3, 0, new Rotation2d(0)),
+        config);
+
+    var thetaController = new ProfiledPIDController(
+        Constants.AutoConstants.kPThetaController, 0, 0, Constants.AutoConstants.kThetaControllerConstraints);
+    thetaController.enableContinuousInput(-Math.PI, Math.PI);
+
+    SwerveControllerCommand swerveControllerCommand = new SwerveControllerCommand(
+        exampleTrajectory,
+        driveSubsystem::getPose, // Functional interface to feed supplier
+        DriveConstants.kinematics,
+
+        // Position controllers
+        new PIDController(Constants.AutoConstants.kPXController, 0, 0),
+        new PIDController(Constants.AutoConstants.kPYController, 0, 0),
+        thetaController,
+        driveSubsystem::setModuleStates,
+        driveSubsystem);
+
+    // Reset odometry to the starting pose of the trajectory.
+    driveSubsystem.resetOdometry(exampleTrajectory.getInitialPose());
+
+    // Run path following command, then stop at the end.
+    return swerveControllerCommand.andThen(() -> driveSubsystem.drivePercent(0, 0, 0, false));
   }
 }

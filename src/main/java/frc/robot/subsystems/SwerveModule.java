@@ -11,27 +11,22 @@ import com.ctre.phoenix.sensors.CANCoderStatusFrame;
 import com.ctre.phoenix.sensors.SensorInitializationStrategy;
 import com.ctre.phoenix.sensors.SensorTimeBase;
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMaxLowLevel;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
-import com.revrobotics.SparkMaxPIDController.AccelStrategy;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxPIDController;
-import com.revrobotics.CANSparkMax.ControlType;
 
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.shuffleboard.SuppliedValueWidget;
 import frc.robot.Constants;
 import frc.robot.Constants.ModuleConstants;
-import frc.robot.ShuffleHelper.ShuffleUtil;
 
 public class SwerveModule {
   public final CANSparkMax m_driveMotor;
@@ -61,8 +56,9 @@ public class SwerveModule {
 
   private final TrapezoidProfile.Constraints m_turnConstraints = new TrapezoidProfile.Constraints(
       Float.POSITIVE_INFINITY,
-      200*2);
+      200 * 2);
   private TrapezoidProfile.State m_lastProfiledReference = new TrapezoidProfile.State();
+  private int turningEncoderId;
 
   /**
    * Constructs a SwerveModule.
@@ -79,7 +75,7 @@ public class SwerveModule {
       int turningEncoderId,
       boolean driveEncoderReversed,
       boolean turningEncoderReversed,
-      Rotation2d magnetOffset) {
+      Rotation2d magnetOffset, boolean enable) {
     m_driveMotor = new CANSparkMax(driveMotorId, MotorType.kBrushless);
     m_turningMotor = new CANSparkMax(turningMotorId, MotorType.kBrushless);
     m_turningMotor.restoreFactoryDefaults();
@@ -91,14 +87,14 @@ public class SwerveModule {
     config.initializationStrategy = SensorInitializationStrategy.BootToAbsolutePosition;
     config.sensorTimeBase = SensorTimeBase.PerSecond;
     config.magnetOffsetDegrees = magnetOffset.getDegrees();
-    config.sensorDirection = !turningEncoderReversed;
+    config.sensorDirection = true;// !turningEncoderReversed;
 
     m_absoluteEncoder.configAllSettings(config, 250);
     m_absoluteEncoder.setStatusFramePeriod(CANCoderStatusFrame.SensorData, 100, 250);
 
     // #region Motor controller setup
-    m_driveMotor.setInverted(driveEncoderReversed);
-    m_turningMotor.setInverted(turningEncoderReversed);
+    // m_driveMotor.setInverted(driveEncoderReversed);
+    // m_turningMotor.setInverted(turningEncoderReversed);
 
     m_turningMotor.setSmartCurrentLimit(20);
     m_driveMotor.setSmartCurrentLimit(80);
@@ -128,7 +124,8 @@ public class SwerveModule {
         .setPositionConversionFactor(Math.toRadians(ModuleConstants.kTurningEncoderDegreesPerPulse));
     m_integratedTurningEncoder
         .setVelocityConversionFactor(Math.toRadians(ModuleConstants.kTurningEncoderDegreesPerPulse) / 60);
-    m_integratedTurningEncoder.setPosition(Math.toRadians(m_absoluteEncoder.getAbsolutePosition()));
+    this.turningEncoderId = turningEncoderId;
+    m_integratedTurningEncoder.setPosition(Units.degreesToRadians(m_absoluteEncoder.getAbsolutePosition()));
 
     m_turningPIDController.enableContinuousInput(-Math.PI, Math.PI);
 
@@ -140,14 +137,17 @@ public class SwerveModule {
     pidController.setI(0.0);
     pidController.setD(0.1);
     // pidController.setFF(1.534);
-    // pidController.setOutputRange(-.5, .5);
+    pidController.setOutputRange(-1, 1);
 
-    // Shuffleboard.getTab("Debug").addDouble("Turn Output Raw", () -> m_turningMotor.get());
-    // Shuffleboard.getTab("Debug").addDouble("Drive Output Raw", () -> m_driveMotor.get());
+    // Shuffleboard.getTab("Debug").addDouble("Turn Output Raw", () ->
+    // m_turningMotor.get());
+    // Shuffleboard.getTab("Debug").addDouble("Drive Output Raw", () ->
+    // m_driveMotor.get());
     Shuffleboard.getTab("Debug")
-        .addDouble("Measured Abs rotation"+turningEncoderId,
+        .addDouble("Measured Abs rotation" + turningEncoderId,
             () -> Units.degreesToRadians(m_absoluteEncoder.getAbsolutePosition()));
-    // Shuffleboard.getTab("Debug").addDouble("Integrated encoder", () -> m_integratedTurningEncoder.getPosition());
+    // Shuffleboard.getTab("Debug").addDouble("Integrated encoder", () ->
+    // m_integratedTurningEncoder.getPosition());
   }
 
   /**
@@ -157,7 +157,7 @@ public class SwerveModule {
    */
   public SwerveModuleState getState() {
     return new SwerveModuleState(
-        m_driveEncoder.getVelocity(), Rotation2d.fromDegrees(m_absoluteEncoder.getAbsolutePosition()));
+        m_driveEncoder.getVelocity(), Rotation2d.fromRadians(m_integratedTurningEncoder.getPosition()));
   }
 
   /**
@@ -167,7 +167,7 @@ public class SwerveModule {
    */
   public SwerveModulePosition getPosition() {
     return new SwerveModulePosition(
-        m_driveEncoder.getPosition(), Rotation2d.fromDegrees(m_absoluteEncoder.getAbsolutePosition()));
+        m_driveEncoder.getPosition(), Rotation2d.fromRadians(m_integratedTurningEncoder.getPosition()));
   }
 
   /**
@@ -177,34 +177,35 @@ public class SwerveModule {
    */
   public void setDesiredState(SwerveModuleState desiredState) {
     // Optimize the reference state to avoid spinning further than 90 degrees
-    SwerveModuleState state = SwerveModuleState.optimize(desiredState,
-    Rotation2d.fromDegrees(m_absoluteEncoder.getAbsolutePosition()));
-    // SwerveModuleState state = desiredState;
-
-    // Calculate the drive output from the drive PID controller.
-    // final double driveOutput =
-    // m_drivePIDController.calculate(m_driveEncoder.getVelocity(),
-    // state.speedMetersPerSecond);
+    SwerveModuleState state = optimizeModuleState(desiredState);
 
     // Calculate the turning motor output from the turning PID controller.
     m_driveMotor.setVoltage((state.speedMetersPerSecond / Constants.DriveConstants.kMaxVelocityMetersPerSecond) * 12);
 
-    // 0.13943,0.39686,0.015295
 
-    // pidController.setReference(state.angle.getRadians(), ControlType.kPosition,
-    // 0, .234);
-    // m_lastProfiledReference = m_profile.calculate(0.02, goal, m_lastProfiledReference);
-    // var goal = new TrapezoidProfile.State(state.angle.getRadians(), 0);
-    // m_lastProfiledReference =
-        // (new TrapezoidProfile(m_turnConstraints, goal, m_lastProfiledReference)).calculate(0.020);
-    // ShuffleUtil.set("Debug", "Turn Goal", goal.position);
-    // ShuffleUtil.set("Debug", "Turn Eval Setpoint", m_lastProfiledReference.position);
-    // pidController.setReference(m_lastProfiledReference.position, ControlType.kPosition);
-    pidController.setReference(state.angle.getRadians(), ControlType.kPosition);
+    double currentAngleRadiansMod = m_integratedTurningEncoder.getPosition() % (2.0 * Math.PI);
+    if (currentAngleRadiansMod < 0.0) {
+      currentAngleRadiansMod += 2.0 * Math.PI;
+    }
 
+    // The reference angle has the range [0, 2pi) but the Neo's encoder can go above
+    // that
+    double adjustedReferenceAngleRadians = state.angle.getRadians() + m_integratedTurningEncoder.getPosition()
+        - currentAngleRadiansMod;
+    if (state.angle.getRadians() - currentAngleRadiansMod > Math.PI) {
+      adjustedReferenceAngleRadians -= 2.0 * Math.PI;
+    } else if (state.angle.getRadians() - currentAngleRadiansMod < -Math.PI) {
+      adjustedReferenceAngleRadians += 2.0 * Math.PI;
+    }
+
+    pidController.setReference(adjustedReferenceAngleRadians, ControlType.kPosition);
+
+    // pidController.setReference(0,ControlType.kPosition);
     // pidController.setReference(state.angle.getRadians(), ControlType.kPosition);
-    // m_turningMotor.set(m_turningPIDController.calculate(m_integratedTurningEncoder.getPosition(),
-    // state.angle.getRadians()));
+  }
+
+  public SwerveModuleState optimizeModuleState(SwerveModuleState state) {
+    return SwerveModuleState.optimize(state, Rotation2d.fromDegrees(m_absoluteEncoder.getAbsolutePosition()));
   }
 
   double map(double x, double in_min, double in_max, double out_min, double out_max) {
@@ -212,6 +213,7 @@ public class SwerveModule {
   }
 
   public void recalEncoders() {
+    System.err.println("Setting " + turningEncoderId + " to " + m_absoluteEncoder.getAbsolutePosition());
     m_integratedTurningEncoder.setPosition(Units.degreesToRadians(m_absoluteEncoder.getAbsolutePosition()));
   }
 

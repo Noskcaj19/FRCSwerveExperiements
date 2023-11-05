@@ -6,6 +6,8 @@ package frc.robot;
 
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import edu.wpi.first.wpilibj.TimedRobot;
 import frc.robot.sds.ModuleConfiguration;
 import frc.robot.sds.SdsModuleConfigurations;
 
@@ -22,22 +24,34 @@ import frc.robot.sds.SdsModuleConfigurations;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
+  public static final class AutoConstants {
+    public static double kPYController = 3;
+    public static double kPXController = 3;
+    public static double kPThetaController = 1;
+    public static double kMaxSpeedMetersPerSecond = DriveConstants.kMaxVelocityMetersPerSecond*.75;
+    public static double kMaxAccelerationMetersPerSecondSquared = 5;
+    public static Constraints kThetaControllerConstraints = new Constraints(
+        DriveConstants.kMaxAngularVelocityRadiansPerSecond * .5, (Math.PI * 2) / 2);
+
+  }
 
   public static final ModuleConfiguration kModuleType = SdsModuleConfigurations.MK4I_L1;
 
   public static final class DriveConstants {
+    public static final double kDrivePeriod = TimedRobot.kDefaultPeriod;
+
     // Distance between left and right wheels
     public static final double kTrackWidthMeters = 0.2921;
     // Distance between front and back wheels
     public static final double kTrackBaseMeters = 0.2921;
 
-    private static final Translation2d m_frontLeftLocation = new Translation2d(kTrackBaseMeters, kTrackWidthMeters);
-    private static final Translation2d m_frontRightLocation = new Translation2d(kTrackBaseMeters, -kTrackWidthMeters);
-    private static final Translation2d m_backLeftLocation = new Translation2d(-kTrackBaseMeters, kTrackWidthMeters);
-    private static final Translation2d m_backRightLocation = new Translation2d(-kTrackBaseMeters, -kTrackWidthMeters);
+    private static final Translation2d kFrontLeftLocation = new Translation2d(kTrackBaseMeters, -kTrackWidthMeters);
+    private static final Translation2d kFrontRightLocation = new Translation2d(kTrackBaseMeters, kTrackWidthMeters);
+    private static final Translation2d kBackLeftLocation = new Translation2d(-kTrackBaseMeters, -kTrackWidthMeters);
+    private static final Translation2d kBackRightLocation = new Translation2d(-kTrackBaseMeters, kTrackWidthMeters);
 
-    public static final SwerveDriveKinematics m_kinematics = new SwerveDriveKinematics(
-        m_frontLeftLocation, m_frontRightLocation, m_backLeftLocation, m_backRightLocation);
+    public static final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(
+        kFrontLeftLocation, kFrontRightLocation, kBackLeftLocation, kBackRightLocation);
 
     // FIXME Measure the drivetrain's maximum velocity or calculate the theoretical.
     // The formula for calculating the theoretical maximum velocity is:
@@ -60,7 +74,7 @@ public final class Constants {
         kModuleType.getWheelDiameter() * Math.PI;
 
     public static final double kMaxAngularVelocityRadiansPerSecond = kMaxVelocityMetersPerSecond
-        / Math.hypot(kTrackWidthMeters / 2, kTrackBaseMeters / 2);
+        / Math.hypot(kTrackWidthMeters / 2, kTrackBaseMeters / 2) ;
 
   }
 
