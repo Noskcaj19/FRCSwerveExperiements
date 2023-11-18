@@ -6,17 +6,15 @@ package frc.robot.subsystems;
 
 import com.kauailabs.navx.frc.AHRS;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.trajectory.constraint.MaxVelocityConstraint;
-import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -117,7 +115,7 @@ public class DriveSubsystem extends SubsystemBase {
      * @param fieldRelative Whether the provided x and y speeds are relative to the
      *                      field.
      */
-    public void drivePercent(double xPercent, double yPercent, double rotPercent, boolean fieldRelative) {
+    public void drivePercent(double xPercent, double yPercent, double rotPercent, boolean fieldRelative, double a, double b) {
         var fwdSpeed = fwdSpeedLimiter.calculate(xPercent) * Constants.DriveConstants.kMaxVelocityMetersPerSecond;
 
         var strafeSpeed = strafeSpeedLimiter.calculate(yPercent)
@@ -130,7 +128,8 @@ public class DriveSubsystem extends SubsystemBase {
                 fieldRelative
                         ? ChassisSpeeds.fromFieldRelativeSpeeds(
                                 fwdSpeed, strafeSpeed, rotSpeed, gyro.getRotation2d().unaryMinus())
-                        : new ChassisSpeeds(fwdSpeed, strafeSpeed, rotSpeed));
+                        : new ChassisSpeeds(fwdSpeed, strafeSpeed, rotSpeed), new Translation2d(DriveConstants.kTrackBaseMeters*a*2 ,DriveConstants.kTrackWidthMeters*b*2));
+                        // : new ChassisSpeeds(fwdSpeed, strafeSpeed, rotSpeed) );
 
         SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates,
                 Constants.DriveConstants.kMaxVelocityMetersPerSecond);

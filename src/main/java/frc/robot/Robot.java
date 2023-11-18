@@ -40,6 +40,7 @@ public class Robot extends TimedRobot {
 
   // private XboxController controller = new XboxController(0);
   private Joystick stick = new Joystick(0);
+  private Joystick stick2 = new Joystick(1);
   private DriveSubsystem driveSubsystem = new DriveSubsystem();
 
   @Override
@@ -60,6 +61,9 @@ public class Robot extends TimedRobot {
       var strafePercent = MathUtil.applyDeadband(stick.getX(), 0.08) * (fast ? 1 : .5);
       var rotPercent = MathUtil.applyDeadband(stick.getTwist(), 0.08) * (fast ? .5 : .15);
 
+      var b = MathUtil.applyDeadband(stick2.getX(), 0.08) ;
+      var a = MathUtil.applyDeadband(-stick2.getY(), 0.08);
+
       // var fast = controller.getRightBumper();
       // var fwdPercent = MathUtil.applyDeadband(-controller.getLeftY(), 0.08) * (fast
       // ? 1 : .5);
@@ -68,11 +72,14 @@ public class Robot extends TimedRobot {
       // var rotPercent = MathUtil.applyDeadband(controller.getRightX(),
       // 0.08)*(fast?.5 : .15);
 
-      driveSubsystem.drivePercent(fwdPercent, strafePercent, rotPercent, true);
+      driveSubsystem.drivePercent(fwdPercent, strafePercent, rotPercent, true,a,b );
 
       // if (controller.getBackButton()) {
       // driveSubsystem.zeroYaw();
       // }
+      if (stick.getRawButtonPressed(12)) {
+        driveSubsystem.zeroYaw();
+      }
       // if (controller.getAButton())
       // driveSubsystem.recalEncoders();
     }, driveSubsystem));
@@ -216,6 +223,6 @@ public class Robot extends TimedRobot {
     driveSubsystem.resetOdometry(exampleTrajectory.getInitialPose());
 
     // Run path following command, then stop at the end.
-    return swerveControllerCommand.andThen(() -> driveSubsystem.drivePercent(0, 0, 0, false));
+    return swerveControllerCommand.andThen(() -> driveSubsystem.drivePercent(0, 0, 0, false,0,0));
   }
 }
