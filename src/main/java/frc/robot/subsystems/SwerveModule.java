@@ -205,7 +205,7 @@ public class SwerveModule {
   }
 
   public SwerveModuleState optimizeModuleState(SwerveModuleState state) {
-    return SwerveModuleState.optimize(state, Rotation2d.fromDegrees(m_absoluteEncoder.getAbsolutePosition()));
+    return SwerveModuleState.optimize(state, Rotation2d.fromDegrees(m_integratedTurningEncoder.getPosition()));
   }
 
   double map(double x, double in_min, double in_max, double out_min, double out_max) {
