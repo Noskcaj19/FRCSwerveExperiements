@@ -134,10 +134,34 @@ public class DriveSubsystem extends SubsystemBase {
         SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates,
                 Constants.DriveConstants.kMaxVelocityMetersPerSecond);
 
-        frontLeft.setDesiredState(swerveModuleStates[0]);
-        frontRight.setDesiredState(swerveModuleStates[1]);
-        backLeft.setDesiredState(swerveModuleStates[2]);
-        backRight.setDesiredState(swerveModuleStates[3]);
+         SwerveModuleState[] optimizedSwerveModuleStates = {
+                frontLeft.optimizeModuleState(swerveModuleStates[0]),
+                frontRight.optimizeModuleState(swerveModuleStates[1]),
+                backLeft.optimizeModuleState(swerveModuleStates[2]),
+                backRight.optimizeModuleState(swerveModuleStates[3]),
+         };
+
+        // var flTheta = swerveModuleStates[0].angle.minus()
+        var flTheta = optimizedSwerveModuleStates[0].angle.minus(frontLeft.getState().angle);
+        var frTheta = optimizedSwerveModuleStates[1].angle.minus(frontRight.getState().angle);
+        var blTheta = optimizedSwerveModuleStates[2].angle.minus(backLeft.getState().angle);
+        var brTheta = optimizedSwerveModuleStates[3].angle.minus(backRight.getState().angle);
+
+        var errorNumerator = Math.abs(flTheta.getCos()) + Math.abs(frTheta.getCos())
+        + Math.abs(blTheta.getCos())
+        + Math.abs(brTheta.getCos());
+        var error = errorNumerator / 4;
+
+
+        optimizedSwerveModuleStates[0].speedMetersPerSecond *= error;
+        optimizedSwerveModuleStates[1].speedMetersPerSecond *= error;
+        optimizedSwerveModuleStates[2].speedMetersPerSecond *= error;
+        optimizedSwerveModuleStates[3].speedMetersPerSecond *= error;
+
+        frontLeft.setDesiredState(optimizedSwerveModuleStates[0]);
+        frontRight.setDesiredState(optimizedSwerveModuleStates[1]);
+        backLeft.setDesiredState(optimizedSwerveModuleStates[2]);
+        backRight.setDesiredState(optimizedSwerveModuleStates[3]);
     }
 
     /**

@@ -40,7 +40,7 @@ public class Robot extends TimedRobot {
 
   // private XboxController controller = new XboxController(0);
   private Joystick stick = new Joystick(0);
-  private Joystick stick2 = new Joystick(1);
+  // private Joystick stick2 = new Joystick(1);
   private DriveSubsystem driveSubsystem = new DriveSubsystem();
 
   @Override
@@ -61,8 +61,10 @@ public class Robot extends TimedRobot {
       var strafePercent = MathUtil.applyDeadband(stick.getX(), 0.08) * (fast ? 1 : .5);
       var rotPercent = MathUtil.applyDeadband(stick.getTwist(), 0.08) * (fast ? .5 : .15);
 
-      var b = MathUtil.applyDeadband(stick2.getX(), 0.08) ;
-      var a = MathUtil.applyDeadband(-stick2.getY(), 0.08);
+      // var b = MathUtil.applyDeadband(stick2.getX(), 0.08) ;
+      // var a = MathUtil.applyDeadband(-stick2.getY(), 0.08);
+      var a = 0;
+      var b = 0 ;
 
       // var fast = controller.getRightBumper();
       // var fwdPercent = MathUtil.applyDeadband(-controller.getLeftY(), 0.08) * (fast

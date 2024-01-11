@@ -177,11 +177,18 @@ public class SwerveModule {
    */
   public void setDesiredState(SwerveModuleState desiredState) {
     // Optimize the reference state to avoid spinning further than 90 degrees
-    SwerveModuleState state = optimizeModuleState(desiredState);
+    // SwerveModuleState state = optimizeModuleState(desiredState);
+    SwerveModuleState state = desiredState;
 
     // Calculate the turning motor output from the turning PID controller.
     m_driveMotor.setVoltage((state.speedMetersPerSecond / Constants.DriveConstants.kMaxVelocityMetersPerSecond) * 12);
 
+
+    pidController.setReference(state.angle.getRadians(), ControlType.kPosition);
+  }
+
+  public SwerveModuleState optimizeModuleState(SwerveModuleState rawState) {
+    var optimizedState = SwerveModuleState.optimize(rawState, Rotation2d.fromRadians(m_integratedTurningEncoder.getPosition()));
 
     double currentAngleRadiansMod = m_integratedTurningEncoder.getPosition() % (2.0 * Math.PI);
     if (currentAngleRadiansMod < 0.0) {
@@ -190,22 +197,18 @@ public class SwerveModule {
 
     // The reference angle has the range [0, 2pi) but the Neo's encoder can go above
     // that
-    double adjustedReferenceAngleRadians = state.angle.getRadians() + m_integratedTurningEncoder.getPosition()
+    double adjustedReferenceAngleRadians = optimizedState.angle.getRadians() + m_integratedTurningEncoder.getPosition()
         - currentAngleRadiansMod;
-    if (state.angle.getRadians() - currentAngleRadiansMod > Math.PI) {
+    if (optimizedState.angle.getRadians() - currentAngleRadiansMod > Math.PI) {
       adjustedReferenceAngleRadians -= 2.0 * Math.PI;
-    } else if (state.angle.getRadians() - currentAngleRadiansMod < -Math.PI) {
+    } else if (optimizedState.angle.getRadians() - currentAngleRadiansMod < -Math.PI) {
       adjustedReferenceAngleRadians += 2.0 * Math.PI;
     }
 
-    pidController.setReference(adjustedReferenceAngleRadians, ControlType.kPosition);
-
     // pidController.setReference(0,ControlType.kPosition);
     // pidController.setReference(state.angle.getRadians(), ControlType.kPosition);
-  }
 
-  public SwerveModuleState optimizeModuleState(SwerveModuleState state) {
-    return SwerveModuleState.optimize(state, Rotation2d.fromDegrees(m_integratedTurningEncoder.getPosition()));
+    return new SwerveModuleState(optimizedState.speedMetersPerSecond, Rotation2d.fromRadians(adjustedReferenceAngleRadians));
   }
 
   double map(double x, double in_min, double in_max, double out_min, double out_max) {
