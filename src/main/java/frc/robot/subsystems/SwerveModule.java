@@ -4,18 +4,16 @@
 
 package frc.robot.subsystems;
 
-import com.ctre.phoenix.sensors.AbsoluteSensorRange;
-import com.ctre.phoenix.sensors.CANCoder;
-import com.ctre.phoenix.sensors.CANCoderConfiguration;
-import com.ctre.phoenix.sensors.CANCoderStatusFrame;
-import com.ctre.phoenix.sensors.SensorInitializationStrategy;
-import com.ctre.phoenix.sensors.SensorTimeBase;
+import com.ctre.phoenix6.configs.MagnetSensorConfigs;
+import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
+import com.ctre.phoenix6.signals.SensorDirectionValue;
+import com.revrobotics.CANSparkLowLevel;
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMax.ControlType;
-import com.revrobotics.CANSparkMaxLowLevel;
-import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.SparkMaxPIDController;
+import com.revrobotics.SparkPIDController;
+import com.revrobotics.CANSparkBase.ControlType;
+import com.revrobotics.CANSparkLowLevel.MotorType;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
@@ -34,7 +32,7 @@ public class SwerveModule {
 
   private final RelativeEncoder m_driveEncoder;
   private final RelativeEncoder m_integratedTurningEncoder;
-  private final CANCoder m_absoluteEncoder;
+  private final CANcoder m_absoluteEncoder;
 
   private final PIDController m_drivePIDController = new PIDController(.1, 0, 0);
 
@@ -52,7 +50,7 @@ public class SwerveModule {
   // new TrapezoidProfile.Constraints(
   // Math.toDegrees(ModuleConstants.kMaxModuleAngularSpeedRadiansPerSecond),
   // Math.toDegrees(ModuleConstants.kMaxModuleAngularAccelerationRadiansPerSecondSquared)));
-  private SparkMaxPIDController pidController;
+  private SparkPIDController pidController;
 
   private final TrapezoidProfile.Constraints m_turnConstraints = new TrapezoidProfile.Constraints(
       Float.POSITIVE_INFINITY,
@@ -80,17 +78,19 @@ public class SwerveModule {
     m_turningMotor = new CANSparkMax(turningMotorId, MotorType.kBrushless);
     m_turningMotor.restoreFactoryDefaults();
 
-    m_absoluteEncoder = new CANCoder(turningEncoderId);
+    m_absoluteEncoder = new CANcoder(turningEncoderId);
 
-    var config = new CANCoderConfiguration();
-    config.absoluteSensorRange = AbsoluteSensorRange.Signed_PlusMinus180;
-    config.initializationStrategy = SensorInitializationStrategy.BootToAbsolutePosition;
-    config.sensorTimeBase = SensorTimeBase.PerSecond;
-    config.magnetOffsetDegrees = magnetOffset.getDegrees();
-    config.sensorDirection = true;// !turningEncoderReversed;
+    var config = new MagnetSensorConfigs();
+    config.AbsoluteSensorRange = AbsoluteSensorRangeValue.Signed_PlusMinusHalf;
+    // config.MagnetSensor.SensorTimeBase = SensorTimeBase.PerSecond;
+    config.MagnetOffset = magnetOffset.getDegrees();
+    config.SensorDirection = SensorDirectionValue.Clockwise_Positive;
 
-    m_absoluteEncoder.configAllSettings(config, 250);
-    m_absoluteEncoder.setStatusFramePeriod(CANCoderStatusFrame.SensorData, 100, 250);
+    m_absoluteEncoder.getConfigurator().apply(config);
+    
+    // ????
+    m_absoluteEncoder.getAbsolutePosition().setUpdateFrequency(100, 250);
+    // m_absoluteEncoder.setStatusFramePeriod(CANCoderStatusFrame.SensorData, 100, 250);
 
     // #region Motor controller setup
     // m_driveMotor.setInverted(driveEncoderReversed);
@@ -99,15 +99,15 @@ public class SwerveModule {
     m_turningMotor.setSmartCurrentLimit(20);
     m_driveMotor.setSmartCurrentLimit(80);
 
-    m_driveMotor.setPeriodicFramePeriod(CANSparkMaxLowLevel.PeriodicFrame.kStatus0, 100);
-    m_driveMotor.setPeriodicFramePeriod(CANSparkMaxLowLevel.PeriodicFrame.kStatus1, 20);
-    m_driveMotor.setPeriodicFramePeriod(CANSparkMaxLowLevel.PeriodicFrame.kStatus2, 20);
+    m_driveMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus0, 100);
+    m_driveMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus1, 20);
+    m_driveMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus2, 20);
     // Set neutral mode
     m_driveMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
 
-    m_turningMotor.setPeriodicFramePeriod(CANSparkMaxLowLevel.PeriodicFrame.kStatus0, 10);
-    m_turningMotor.setPeriodicFramePeriod(CANSparkMaxLowLevel.PeriodicFrame.kStatus1, 20);
-    m_turningMotor.setPeriodicFramePeriod(CANSparkMaxLowLevel.PeriodicFrame.kStatus2, 50);
+    m_turningMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus0, 10);
+    m_turningMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus1, 20);
+    m_turningMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus2, 50);
     // Set neutral mode
     m_turningMotor.setIdleMode(CANSparkMax.IdleMode.kCoast);
     // #endregion
@@ -125,7 +125,7 @@ public class SwerveModule {
     m_integratedTurningEncoder
         .setVelocityConversionFactor(Math.toRadians(ModuleConstants.kTurningEncoderDegreesPerPulse) / 60);
     this.turningEncoderId = turningEncoderId;
-    m_integratedTurningEncoder.setPosition(Units.degreesToRadians(m_absoluteEncoder.getAbsolutePosition()));
+    m_integratedTurningEncoder.setPosition(Units.rotationsToRadians(m_absoluteEncoder.getAbsolutePosition().getValueAsDouble()));
 
     m_turningPIDController.enableContinuousInput(-Math.PI, Math.PI);
 
@@ -145,7 +145,7 @@ public class SwerveModule {
     // m_driveMotor.get());
     Shuffleboard.getTab("Debug")
         .addDouble("Measured Abs rotation" + turningEncoderId,
-            () -> Units.degreesToRadians(m_absoluteEncoder.getAbsolutePosition()));
+            () -> Units.rotationsToDegrees(m_absoluteEncoder.getAbsolutePosition().getValueAsDouble()));
     // Shuffleboard.getTab("Debug").addDouble("Integrated encoder", () ->
     // m_integratedTurningEncoder.getPosition());
   }
@@ -216,8 +216,8 @@ public class SwerveModule {
   }
 
   public void recalEncoders() {
-    System.err.println("Setting " + turningEncoderId + " to " + m_absoluteEncoder.getAbsolutePosition());
-    m_integratedTurningEncoder.setPosition(Units.degreesToRadians(m_absoluteEncoder.getAbsolutePosition()));
+    System.err.println("Setting " + turningEncoderId + " to " + Units.rotationsToDegrees(m_absoluteEncoder.getAbsolutePosition().getValueAsDouble()));
+    m_integratedTurningEncoder.setPosition(Units.rotationsToRadians(m_absoluteEncoder.getAbsolutePosition().getValueAsDouble()));
   }
 
   /** Zeroes all the SwerveModule encoders. */

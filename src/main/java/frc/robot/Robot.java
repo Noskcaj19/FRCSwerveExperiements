@@ -6,8 +6,6 @@ package frc.robot;
 
 import java.util.List;
 
-import com.revrobotics.REVPhysicsSim;
-
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -190,7 +188,6 @@ public class Robot extends TimedRobot {
 
   @Override
   public void simulationPeriodic() {
-    REVPhysicsSim.getInstance().run();
   }
 
   public Command getAutonomousCommand() {
