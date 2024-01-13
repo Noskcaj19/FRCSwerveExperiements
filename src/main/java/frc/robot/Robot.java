@@ -24,7 +24,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.Constants.DriveConstants;
+import frc.robot.commands.AutoStrafeNote;
 import frc.robot.subsystems.DriveSubsystem;
 
 /**
@@ -55,6 +57,10 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
+
+    var trigger = new JoystickButton(stick, 11);
+    trigger.whileTrue(new AutoStrafeNote(driveSubsystem));
+
     driveSubsystem.setDefaultCommand(new RunCommand(() -> {
       var fast = stick.getTrigger();
       var fwdPercent = MathUtil.applyDeadband(-stick.getY(), 0.08) * (fast ? 1 : .5);
