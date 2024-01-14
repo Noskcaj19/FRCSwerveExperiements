@@ -58,6 +58,10 @@ public class SwerveModule {
   private TrapezoidProfile.State m_lastProfiledReference = new TrapezoidProfile.State();
   private int turningEncoderId;
 
+  private double getAbsRad() {
+    return m_absoluteEncoder.getAbsolutePosition().getValueAsDouble() * Math.PI * 2;
+  }
+
   /**
    * Constructs a SwerveModule.
    *
@@ -66,6 +70,7 @@ public class SwerveModule {
    * @param turningEncoderChannel  The channels of the turning encoder.
    * @param driveEncoderReversed   Whether the drive encoder is reversed.
    * @param turningEncoderReversed Whether the turning encoder is reversed.
+   * @param magnetOffset           Whatever the sensor reads when the wheel is at at zero, but negated
    */
   public SwerveModule(
       int driveMotorId,
@@ -73,8 +78,9 @@ public class SwerveModule {
       int turningEncoderId,
       boolean driveEncoderReversed,
       boolean turningEncoderReversed,
-      Rotation2d magnetOffset, boolean enable) {
+      double magnetOffset, boolean enable) {
     m_driveMotor = new CANSparkMax(driveMotorId, MotorType.kBrushless);
+    m_driveMotor.restoreFactoryDefaults();
     m_turningMotor = new CANSparkMax(turningMotorId, MotorType.kBrushless);
     m_turningMotor.restoreFactoryDefaults();
 
@@ -83,7 +89,7 @@ public class SwerveModule {
     var config = new MagnetSensorConfigs();
     config.AbsoluteSensorRange = AbsoluteSensorRangeValue.Signed_PlusMinusHalf;
     // config.MagnetSensor.SensorTimeBase = SensorTimeBase.PerSecond;
-    config.MagnetOffset = magnetOffset.getDegrees();
+    config.MagnetOffset = magnetOffset;
     config.SensorDirection = SensorDirectionValue.Clockwise_Positive;
 
     m_absoluteEncoder.getConfigurator().apply(config);
@@ -125,7 +131,7 @@ public class SwerveModule {
     m_integratedTurningEncoder
         .setVelocityConversionFactor(Math.toRadians(ModuleConstants.kTurningEncoderDegreesPerPulse) / 60);
     this.turningEncoderId = turningEncoderId;
-    m_integratedTurningEncoder.setPosition(Units.rotationsToRadians(m_absoluteEncoder.getAbsolutePosition().getValueAsDouble()));
+    recalEncoders();
 
     m_turningPIDController.enableContinuousInput(-Math.PI, Math.PI);
 
@@ -144,8 +150,17 @@ public class SwerveModule {
     // Shuffleboard.getTab("Debug").addDouble("Drive Output Raw", () ->
     // m_driveMotor.get());
     Shuffleboard.getTab("Debug")
-        .addDouble("Measured Abs rotation" + turningEncoderId,
-            () -> Units.rotationsToDegrees(m_absoluteEncoder.getAbsolutePosition().getValueAsDouble()));
+        .addDouble(""+turningEncoderId+"mag",
+            () -> m_absoluteEncoder.getAbsolutePosition().getValueAsDouble());
+    Shuffleboard.getTab("Debug")
+        .addDouble(""+turningEncoderId+"mag rotation",
+            () -> getAbsRad());
+    // Shuffleboard.getTab("Debug")
+    //     .addDouble(""+turningEncoderId+"mag Raw rotation",
+    //         () -> getAbsRadRaw());
+    Shuffleboard.getTab("Debug")
+        .addDouble(""+turningEncoderId+"integrated ",
+            () -> m_integratedTurningEncoder.getPosition());
     // Shuffleboard.getTab("Debug").addDouble("Integrated encoder", () ->
     // m_integratedTurningEncoder.getPosition());
   }
@@ -216,13 +231,11 @@ public class SwerveModule {
   }
 
   public void recalEncoders() {
-    System.err.println("Setting " + turningEncoderId + " to " + Units.rotationsToDegrees(m_absoluteEncoder.getAbsolutePosition().getValueAsDouble()));
-    m_integratedTurningEncoder.setPosition(Units.rotationsToRadians(m_absoluteEncoder.getAbsolutePosition().getValueAsDouble()));
+    m_integratedTurningEncoder.setPosition(getAbsRad());
   }
 
   /** Zeroes all the SwerveModule encoders. */
   public void resetEncoders() {
     m_driveEncoder.setPosition(0);
-    m_absoluteEncoder.setPosition(0);
   }
 }

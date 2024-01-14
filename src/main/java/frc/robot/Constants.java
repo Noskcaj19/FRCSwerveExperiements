@@ -35,7 +35,7 @@ public final class Constants {
 
   }
 
-  public static final ModuleConfiguration kModuleType = SdsModuleConfigurations.MK4I_L1;
+  public static final ModuleConfiguration kModuleType = SdsModuleConfigurations.MK4I_L2;
 
   public static final class DriveConstants {
     public static final double kDrivePeriod = TimedRobot.kDefaultPeriod;

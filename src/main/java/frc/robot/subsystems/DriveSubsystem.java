@@ -8,7 +8,6 @@ import com.kauailabs.navx.frc.AHRS;
 
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -26,25 +25,25 @@ public class DriveSubsystem extends SubsystemBase {
             20,
             false,
             false,
-            Rotation2d.fromRadians(1.5754), false);
+            .252, false);
     private SwerveModule frontRight = new SwerveModule(13,
             12,
             19,
             false,
             false,
-            Rotation2d.fromRadians(-1.2026), false);
+            0.442, false);
     private SwerveModule backLeft = new SwerveModule(17,
             16,
             21,
             false,
             false,
-            Rotation2d.fromRadians(-2.6982), false);
+            -.334, false);
     private SwerveModule backRight = new SwerveModule(11,
             10,
             18,
             false,
             false,
-            Rotation2d.fromRadians(2.6952), true);
+            .071, true);
 
     private final SlewRateLimiter fwdSpeedLimiter = new SlewRateLimiter(2);
     private final SlewRateLimiter strafeSpeedLimiter = new SlewRateLimiter(2);
@@ -116,19 +115,24 @@ public class DriveSubsystem extends SubsystemBase {
      *                      field.
      */
     public void drivePercent(double xPercent, double yPercent, double rotPercent, boolean fieldRelative, double a, double b) {
-        var fwdSpeed = fwdSpeedLimiter.calculate(xPercent) * Constants.DriveConstants.kMaxVelocityMetersPerSecond;
+        var fwdSpeed = -fwdSpeedLimiter.calculate(xPercent) * Constants.DriveConstants.kMaxVelocityMetersPerSecond;
 
-        var strafeSpeed = strafeSpeedLimiter.calculate(yPercent)
+        var strafeSpeed = -strafeSpeedLimiter.calculate(yPercent)
                 * Constants.DriveConstants.kMaxVelocityMetersPerSecond;
 
-        var rotSpeed = (rotLimiter.calculate(rotPercent) * Constants.DriveConstants.kMaxAngularVelocityRadiansPerSecond)
+        var rotSpeed = -(rotLimiter.calculate(rotPercent) * Constants.DriveConstants.kMaxAngularVelocityRadiansPerSecond)
                 / 1;
 
         var swerveModuleStates = DriveConstants.kinematics.toSwerveModuleStates(
-                fieldRelative
-                        ? ChassisSpeeds.fromFieldRelativeSpeeds(
-                                fwdSpeed, strafeSpeed, rotSpeed, gyro.getRotation2d().unaryMinus())
-                        : new ChassisSpeeds(fwdSpeed, strafeSpeed, rotSpeed), new Translation2d(DriveConstants.kTrackBaseMeters*a*2 ,DriveConstants.kTrackWidthMeters*b*2));
+                        ChassisSpeeds.discretize(
+                                        fieldRelative
+                                                        ? ChassisSpeeds.fromFieldRelativeSpeeds(
+                                                                        fwdSpeed, strafeSpeed, rotSpeed,
+                                                                        gyro.getRotation2d().unaryMinus())
+                                                        : new ChassisSpeeds(fwdSpeed, strafeSpeed, rotSpeed),
+                                        .02),
+                        new Translation2d(DriveConstants.kTrackBaseMeters * a * 2,
+                                        DriveConstants.kTrackWidthMeters * b * 2));
                         // : new ChassisSpeeds(fwdSpeed, strafeSpeed, rotSpeed) );
 
         SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates,
