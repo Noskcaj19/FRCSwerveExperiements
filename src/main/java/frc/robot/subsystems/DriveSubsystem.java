@@ -29,26 +29,26 @@ public class DriveSubsystem extends SubsystemBase {
             14,
             20,
             false,
-            false,
-            .252, false);
+            true,
+            -0.247, false);
     private SwerveModule frontRight = new SwerveModule(13,
             12,
             19,
             false,
-            false,
-            0.442, false);
+           true,
+            -.437, false);
     private SwerveModule backLeft = new SwerveModule(17,
             16,
             21,
             false,
-            false,
-            -.334, false);
+           true,
+            0.325, false);
     private SwerveModule backRight = new SwerveModule(11,
             10,
             18,
             false,
-            false,
-            .071, true);
+          true,
+            -0.072, true);
 
     private final SlewRateLimiter fwdSpeedLimiter = new SlewRateLimiter(2);
     private final SlewRateLimiter strafeSpeedLimiter = new SlewRateLimiter(2);
@@ -154,12 +154,12 @@ public class DriveSubsystem extends SubsystemBase {
      *                      field.
      */
     public void drivePercent(double xPercent, double yPercent, double rotPercent, boolean fieldRelative, double a, double b) {
-        var fwdSpeed = -fwdSpeedLimiter.calculate(xPercent) * Constants.DriveConstants.kMaxVelocityMetersPerSecond;
+        var fwdSpeed = fwdSpeedLimiter.calculate(xPercent) * Constants.DriveConstants.kMaxVelocityMetersPerSecond;
 
-        var strafeSpeed = -strafeSpeedLimiter.calculate(yPercent)
+        var strafeSpeed = strafeSpeedLimiter.calculate(yPercent)
                 * Constants.DriveConstants.kMaxVelocityMetersPerSecond;
 
-        var rotSpeed = -(rotLimiter.calculate(rotPercent) * Constants.DriveConstants.kMaxAngularVelocityRadiansPerSecond)
+        var rotSpeed = (rotLimiter.calculate(rotPercent) * Constants.DriveConstants.kMaxAngularVelocityRadiansPerSecond)
                 / 1;
 
         var chasisSpeeds = fieldRelative

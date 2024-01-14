@@ -77,12 +77,15 @@ public class SwerveModule {
       int turningMotorId,
       int turningEncoderId,
       boolean driveEncoderReversed,
-      boolean turningEncoderReversed,
+      boolean turningMotorReversed,
       double magnetOffset, boolean enable) {
     m_driveMotor = new CANSparkMax(driveMotorId, MotorType.kBrushless);
     m_driveMotor.restoreFactoryDefaults();
     m_turningMotor = new CANSparkMax(turningMotorId, MotorType.kBrushless);
     m_turningMotor.restoreFactoryDefaults();
+
+    m_turningMotor.setInverted(turningMotorReversed);
+    m_driveMotor.setInverted(true);
 
     m_absoluteEncoder = new CANcoder(turningEncoderId);
 
@@ -90,7 +93,7 @@ public class SwerveModule {
     config.AbsoluteSensorRange = AbsoluteSensorRangeValue.Signed_PlusMinusHalf;
     // config.MagnetSensor.SensorTimeBase = SensorTimeBase.PerSecond;
     config.MagnetOffset = magnetOffset;
-    config.SensorDirection = SensorDirectionValue.Clockwise_Positive;
+    config.SensorDirection = SensorDirectionValue.CounterClockwise_Positive;
 
     m_absoluteEncoder.getConfigurator().apply(config);
     

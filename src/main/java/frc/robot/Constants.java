@@ -28,14 +28,14 @@ public final class Constants {
     public static double kPYController = 3;
     public static double kPXController = 3;
     public static double kPThetaController = 1;
-    public static double kMaxSpeedMetersPerSecond = DriveConstants.kMaxVelocityMetersPerSecond * .25;
-    public static double kMaxAccelerationMetersPerSecondSquared = 1;
+    public static double kMaxSpeedMetersPerSecond = DriveConstants.kMaxVelocityMetersPerSecond * .50;
+    public static double kMaxAccelerationMetersPerSecondSquared = 2;
     public static Constraints kThetaControllerConstraints = new Constraints(
         DriveConstants.kMaxAngularVelocityRadiansPerSecond * .5, (Math.PI * 2) / 2);
 
   }
 
-  public static final ModuleConfiguration kModuleType = SdsModuleConfigurations.MK4I_L2;
+  public static final ModuleConfiguration kModuleType = SdsModuleConfigurations.MK4I_L1;
 
   public static final class DriveConstants {
     public static final double kDrivePeriod = TimedRobot.kDefaultPeriod;
@@ -45,10 +45,10 @@ public final class Constants {
     // Distance between front and back wheels
     public static final double kTrackBaseMeters = 0.2921;
 
-    private static final Translation2d kFrontLeftLocation = new Translation2d(kTrackBaseMeters, -kTrackWidthMeters);
-    private static final Translation2d kFrontRightLocation = new Translation2d(kTrackBaseMeters, kTrackWidthMeters);
-    private static final Translation2d kBackLeftLocation = new Translation2d(-kTrackBaseMeters, -kTrackWidthMeters);
-    private static final Translation2d kBackRightLocation = new Translation2d(-kTrackBaseMeters, kTrackWidthMeters);
+    private static final Translation2d kFrontLeftLocation = new Translation2d(kTrackBaseMeters, kTrackWidthMeters);
+    private static final Translation2d kFrontRightLocation = new Translation2d(kTrackBaseMeters, -kTrackWidthMeters);
+    private static final Translation2d kBackLeftLocation = new Translation2d(-kTrackBaseMeters, kTrackWidthMeters);
+    private static final Translation2d kBackRightLocation = new Translation2d(-kTrackBaseMeters, -kTrackWidthMeters);
 
     public static final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(
         kFrontLeftLocation, kFrontRightLocation, kBackLeftLocation, kBackRightLocation);

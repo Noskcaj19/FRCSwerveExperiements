@@ -63,8 +63,8 @@ public class Robot extends TimedRobot {
     driveSubsystem.setDefaultCommand(new RunCommand(() -> {
       var fast = stick.getTrigger();
       var fwdPercent = MathUtil.applyDeadband(-stick.getY(), 0.08) * (fast ? 1 : .5);
-      var strafePercent = MathUtil.applyDeadband(stick.getX(), 0.08) * (fast ? 1 : .5);
-      var rotPercent = MathUtil.applyDeadband(stick.getTwist(), 0.08) * (fast ? .5 : .15);
+      var strafePercent = MathUtil.applyDeadband(-stick.getX(), 0.08) * (fast ? 1 : .5);
+      var rotPercent = MathUtil.applyDeadband(-stick.getTwist(), 0.08) * (fast ? .5 : .15);
 
       // var b = MathUtil.applyDeadband(stick2.getX(), 0.08) ;
       // var a = MathUtil.applyDeadband(-stick2.getY(), 0.08);
@@ -191,11 +191,11 @@ public class Robot extends TimedRobot {
   public void simulationPeriodic() {
   }
 
-  public Command getAutonomousCommand() {
+  public Command getAutonomousCommand2() {
     return new PathPlannerAuto("New Auto");
   }
 
-  public Command getAutonomousCommand2() {
+  public Command getAutonomousCommand() {
     // Create config for trajectory
     TrajectoryConfig config = new TrajectoryConfig(
         Constants.AutoConstants.kMaxSpeedMetersPerSecond,
@@ -208,9 +208,9 @@ public class Robot extends TimedRobot {
         // Start at the origin facing the +X direction
         new Pose2d(0, 0, new Rotation2d(0)),
         // Pass through these two interior waypoints, making an 's' curve path
-        List.of(new Translation2d(1/2, 1/2), new Translation2d(2/2, -1/2)),
+        List.of(new Translation2d(1/2, 1/2)),
         // End 3 meters straight ahead of where we started, facing forward
-        new Pose2d(3/2, 0, new Rotation2d(0)),
+        new Pose2d(1, 0, new Rotation2d(0)),
         config);
 
     var thetaController = new ProfiledPIDController(
