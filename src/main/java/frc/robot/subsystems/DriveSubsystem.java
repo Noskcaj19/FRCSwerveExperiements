@@ -59,7 +59,7 @@ public class DriveSubsystem extends SubsystemBase {
     // Odometry class for tracking robot pose
     SwerveDriveOdometry odometry = new SwerveDriveOdometry(
             Constants.DriveConstants.kinematics,
-            gyro.getRotation2d().unaryMinus(),
+            gyro.getRotation2d(),
             new SwerveModulePosition[] {
                     frontLeft.getPosition(),
                     frontRight.getPosition(),
@@ -105,7 +105,7 @@ public class DriveSubsystem extends SubsystemBase {
     public void periodic() {
         // Update the odometry in the periodic block
         odometry.update(
-                gyro.getRotation2d().unaryMinus(),
+                gyro.getRotation2d(),
                 new SwerveModulePosition[] {
                         frontLeft.getPosition(),
                         frontRight.getPosition(),
@@ -134,7 +134,7 @@ public class DriveSubsystem extends SubsystemBase {
      */
     public void resetOdometry(Pose2d pose) {
         odometry.resetPosition(
-                gyro.getRotation2d().unaryMinus(),
+                gyro.getRotation2d(),
                 new SwerveModulePosition[] {
                         frontLeft.getPosition(),
                         frontRight.getPosition(),
@@ -165,7 +165,7 @@ public class DriveSubsystem extends SubsystemBase {
         var chasisSpeeds = fieldRelative
                         ? ChassisSpeeds.fromFieldRelativeSpeeds(
                                         fwdSpeed, strafeSpeed, rotSpeed,
-                                        gyro.getRotation2d().unaryMinus())
+                                        gyro.getRotation2d())
                         : new ChassisSpeeds(fwdSpeed, strafeSpeed, rotSpeed);
 
         var swerveModuleStates = DriveConstants.kinematics.toSwerveModuleStates(
@@ -272,7 +272,7 @@ public class DriveSubsystem extends SubsystemBase {
      * @return the robot's heading in degrees, from -180 to 180
      */
     public double getHeading() {
-        return gyro.getRotation2d().unaryMinus().getDegrees();
+        return gyro.getRotation2d().getDegrees();
     }
 
     /**
