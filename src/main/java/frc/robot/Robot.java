@@ -6,6 +6,8 @@ package frc.robot;
 
 import java.util.List;
 
+import com.pathplanner.lib.commands.PathPlannerAuto;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -17,7 +19,6 @@ import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.RunCommand;
@@ -191,6 +192,10 @@ public class Robot extends TimedRobot {
   }
 
   public Command getAutonomousCommand() {
+    return new PathPlannerAuto("New Auto");
+  }
+
+  public Command getAutonomousCommand2() {
     // Create config for trajectory
     TrajectoryConfig config = new TrajectoryConfig(
         Constants.AutoConstants.kMaxSpeedMetersPerSecond,
@@ -203,9 +208,9 @@ public class Robot extends TimedRobot {
         // Start at the origin facing the +X direction
         new Pose2d(0, 0, new Rotation2d(0)),
         // Pass through these two interior waypoints, making an 's' curve path
-        List.of(new Translation2d(1, 1), new Translation2d(2, -1)),
+        List.of(new Translation2d(1/2, 1/2), new Translation2d(2/2, -1/2)),
         // End 3 meters straight ahead of where we started, facing forward
-        new Pose2d(3, 0, new Rotation2d(0)),
+        new Pose2d(3/2, 0, new Rotation2d(0)),
         config);
 
     var thetaController = new ProfiledPIDController(
