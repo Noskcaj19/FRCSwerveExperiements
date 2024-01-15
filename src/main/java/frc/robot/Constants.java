@@ -29,7 +29,7 @@ public final class Constants {
     public static double kPXController = 3;
     public static double kPThetaController = 1;
     public static double kMaxSpeedMetersPerSecond = DriveConstants.kMaxVelocityMetersPerSecond * .50;
-    public static double kMaxAccelerationMetersPerSecondSquared = 2;
+    public static double kMaxAccelerationMetersPerSecondSquared = 4;
     public static Constraints kThetaControllerConstraints = new Constraints(
         DriveConstants.kMaxAngularVelocityRadiansPerSecond * .5, (Math.PI * 2) / 2);
 

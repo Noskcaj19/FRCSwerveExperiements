@@ -74,16 +74,15 @@ public class DriveSubsystem extends SubsystemBase {
                 this::resetOdometry, // Method to reset odometry (will be called if your auto has a starting pose)
                 this::getSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
                 (ChassisSpeeds speeds) -> {
-                        speeds.omegaRadiansPerSecond = -speeds.omegaRadiansPerSecond;
                                  var swerveModuleStates = DriveConstants.kinematics.toSwerveModuleStates(
                                                  ChassisSpeeds.discretize(speeds, .02));
                                  driveStates(swerveModuleStates);
                 }, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
                 new HolonomicPathFollowerConfig( // HolonomicPathFollowerConfig, this should likely live in your Constants class
-                        new PIDConstants(3.0, 0.0, 0.0), // Translation PID constants
-                        new PIDConstants(2.0, 0.0, 0.0), // Rotation PID constants
+                        new PIDConstants(9.5, 0.0, 0.0), // Translation PID constants
+                        new PIDConstants(9, 0.0, 0.0), // Rotation PID constants
                         1.5, // Max module speed, in m/s
-                        0.4, // Drive base radius in meters. Distance from robot center to furthest module.
+                        0.3, // Drive base radius in meters. Distance from robot center to furthest module.
                         new ReplanningConfig() // Default path replanning config. See the API for the options here
                 ),
                 () -> {
@@ -170,8 +169,8 @@ public class DriveSubsystem extends SubsystemBase {
 
         var swerveModuleStates = DriveConstants.kinematics.toSwerveModuleStates(
                         ChassisSpeeds.discretize(chasisSpeeds, .02),
-                        new Translation2d(DriveConstants.kTrackBaseMeters * a * 2,
-                                        DriveConstants.kTrackWidthMeters * b * 2));
+                        new Translation2d(DriveConstants.kTrackBaseMeters * a * 1.5,
+                                        DriveConstants.kTrackWidthMeters * b * 1.5));
                         // : new ChassisSpeeds(fwdSpeed, strafeSpeed, rotSpeed) );
         driveStates(swerveModuleStates);
     }

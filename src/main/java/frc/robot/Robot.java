@@ -8,6 +8,7 @@ import java.util.List;
 
 import com.pathplanner.lib.commands.PathPlannerAuto;
 
+import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -56,6 +57,8 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
+    CameraServer.startAutomaticCapture();
+    CameraServer.startAutomaticCapture();
 
     var trigger = new JoystickButton(stick, 11);
     trigger.whileTrue(new AutoStrafeNote(driveSubsystem));
@@ -68,8 +71,22 @@ public class Robot extends TimedRobot {
 
       // var b = MathUtil.applyDeadband(stick2.getX(), 0.08) ;
       // var a = MathUtil.applyDeadband(-stick2.getY(), 0.08);
+      var pov = stick.getPOV();
       var a = 0;
       var b = 0 ;
+      if (pov == 45) {
+        a = -1;
+        b = 1;
+      } else if (pov == 45 + 90) {
+        a = -1;
+        b = -1;
+      } else if (pov == 45 + 90 + 90) {
+        a = 1;
+        b = -1;
+      } else if (pov == 45 + 90 + 90 + 90) {
+        a = 1;
+        b = 1;
+      }
 
       // var fast = controller.getRightBumper();
       // var fwdPercent = MathUtil.applyDeadband(-controller.getLeftY(), 0.08) * (fast
@@ -79,7 +96,14 @@ public class Robot extends TimedRobot {
       // var rotPercent = MathUtil.applyDeadband(controller.getRightX(),
       // 0.08)*(fast?.5 : .15);
 
-      driveSubsystem.drivePercent(fwdPercent, strafePercent, rotPercent, true,a,b );
+      if (stick.getRawButton(2)) {
+        strafePercent = 0;
+      }
+      var mod = (stick.getRawAxis(3) + 1) / 2;
+      fwdPercent *= mod; 
+      strafePercent *= mod;
+      rotPercent *= mod;
+      driveSubsystem.drivePercent(fwdPercent, strafePercent, rotPercent,!stick.getRawButton(3),a,b );
 
       // if (controller.getBackButton()) {
       // driveSubsystem.zeroYaw();
@@ -102,83 +126,6 @@ public class Robot extends TimedRobot {
   }
 
   @Override
-  public void teleopPeriodic() {
-    // swerve.m_driveMotor.set(.1);
-
-    // rotation = MathUtil.clamp(rotation + (controller.getRightX() * 0.01570796),
-    // -Math.PI, Math.PI);
-
-    // if (controller.getPOV() == 90) {
-    // rotation = Math.PI;
-    // } else if (controller.getPOV() == 270) {
-    // rotation = -Math.PI;
-    // }
-
-    // commandedRotationEntry.setDouble(rotationRad);
-
-    // example: joystick
-
-    // ---
-    // var swerveModuleStates = DriveConstants.m_kinematics.toSwerveModuleStates(
-    // new ChassisSpeeds(fwdSpeedJ, strafeSpeedJ, rotSpeedJ));
-
-    // var swerveModuleStates =
-    // DriveConstants.m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(
-    // new ChassisSpeeds(MathUtil.applyDeadband(-stick.getY(), 0.1),
-    // MathUtil.applyDeadband(stick.getX(), 0.1),
-    // MathUtil.applyDeadband(stick.getTwist(), 0.1)),
-    // gyro.getRotation2d().unaryMinus()));
-
-    /*******
-     *******/
-
-    // swerveModuleStates[1] =
-    // m_frontLeft.optimizeModuleState(swerveModuleStates[1]);
-    // swerveModuleStates[0]
-    // =m_frontRight.optimizeModuleState(swerveModuleStates[0]);
-    // swerveModuleStates[3] =m_backLeft.optimizeModuleState(swerveModuleStates[3]);
-    // swerveModuleStates[2]
-    // =m_backRight.optimizeModuleState(swerveModuleStates[2]);
-
-    // System.out.println("target: " + swerveModuleStates[1].angle.getRadians() + "
-    // current " +m_frontLeft.getState().angle.getRadians() + " diff = " +
-    // swerveModuleStates[1].angle.minus(m_frontLeft.getState().angle).getRadians());
-    // var flTheta = Rotation2d.fromRadians(swerveModuleStates[1].angle.getRadians()
-    // % (Math.PI * 2.0))
-    // .minus(Rotation2d.fromRadians(m_frontLeft.getState().angle.getRadians() %
-    // (Math.PI * 2.0)));
-    // var frTheta = Rotation2d.fromRadians(swerveModuleStates[0].angle.getRadians()
-    // % (Math.PI * 2.0))
-    // .minus(Rotation2d.fromRadians(m_frontRight.getState().angle.getRadians() %
-    // (Math.PI * 2.0)));
-    // var blTheta = Rotation2d.fromRadians(swerveModuleStates[3].angle.getRadians()
-    // % (Math.PI * 2.0))
-    // .minus(Rotation2d.fromRadians(m_backLeft.getState().angle.getRadians() %
-    // (Math.PI * 2.0)));
-    // var brTheta = Rotation2d.fromRadians(swerveModuleStates[2].angle.getRadians()
-    // % (Math.PI * 2.0))
-    // .minus(Rotation2d.fromRadians(m_backRight.getState().angle.getRadians() %
-    // (Math.PI * 2.0)));
-
-    // // linear? cos? cos^3?
-    // var errorNumerator = Math.abs(flTheta.getCos()) + Math.abs(frTheta.getCos())
-    // + Math.abs(blTheta.getCos())
-    // + Math.abs(brTheta.getCos());
-    // var error = errorNumerator / 4;
-
-    // swerveModuleStates[0].speedMetersPerSecond *= error;
-    // swerveModuleStates[1].speedMetersPerSecond *= error;
-    // swerveModuleStates[2].speedMetersPerSecond *= error;
-    // swerveModuleStates[3].speedMetersPerSecond *= error;
-    /*******
-     *******/
-
-    // if (controller.getBackButton()) {
-    // gyro.zeroYaw();
-    // }
-  }
-
-  @Override
   public void autonomousInit() {
     getAutonomousCommand().schedule();
   }
@@ -191,11 +138,11 @@ public class Robot extends TimedRobot {
   public void simulationPeriodic() {
   }
 
-  public Command getAutonomousCommand2() {
+  public Command getAutonomousCommand() {
     return new PathPlannerAuto("New Auto");
   }
 
-  public Command getAutonomousCommand() {
+  public Command getAutonomousCommand2() {
     // Create config for trajectory
     TrajectoryConfig config = new TrajectoryConfig(
         Constants.AutoConstants.kMaxSpeedMetersPerSecond,
@@ -208,9 +155,9 @@ public class Robot extends TimedRobot {
         // Start at the origin facing the +X direction
         new Pose2d(0, 0, new Rotation2d(0)),
         // Pass through these two interior waypoints, making an 's' curve path
-        List.of(new Translation2d(1/2, 1/2)),
+        List.of(new Translation2d(1, 1)),
         // End 3 meters straight ahead of where we started, facing forward
-        new Pose2d(1, 0, new Rotation2d(0)),
+        new Pose2d(2, 0, new Rotation2d(0)),
         config);
 
     var thetaController = new ProfiledPIDController(
