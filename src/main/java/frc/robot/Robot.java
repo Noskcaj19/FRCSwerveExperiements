@@ -20,6 +20,7 @@ import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.RunCommand;
@@ -41,7 +42,7 @@ import frc.robot.subsystems.DriveSubsystem;
 public class Robot extends TimedRobot {
 
   // private XboxController controller = new XboxController(0);
-  private Joystick stick = new Joystick(0);
+  private NetworkTablesController stick = new NetworkTablesController(0);
   // private Joystick stick2 = new Joystick(1);
   private DriveSubsystem driveSubsystem = new DriveSubsystem();
 
@@ -57,17 +58,17 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
-    CameraServer.startAutomaticCapture();
-    CameraServer.startAutomaticCapture();
+    // CameraServer.startAutomaticCapture();
+    // CameraServer.startAutomaticCapture();
 
     var trigger = new JoystickButton(stick, 11);
     trigger.whileTrue(new AutoStrafeNote(driveSubsystem));
 
     driveSubsystem.setDefaultCommand(new RunCommand(() -> {
-      var fast = stick.getTrigger();
-      var fwdPercent = MathUtil.applyDeadband(-stick.getY(), 0.08) * (fast ? 1 : .5);
-      var strafePercent = MathUtil.applyDeadband(-stick.getX(), 0.08) * (fast ? 1 : .5);
-      var rotPercent = MathUtil.applyDeadband(-stick.getTwist(), 0.08) * (fast ? .5 : .15);
+      var fast = stick.getRightBumper();
+      var fwdPercent = MathUtil.applyDeadband(-stick.getRightY(), 0.08) * (fast ? 1 : .5);
+      var strafePercent = MathUtil.applyDeadband(stick.getRightX(), 0.08) * (fast ? 1 : .5);
+      var rotPercent = MathUtil.applyDeadband(stick.getLeftX(), 0.08) * (fast ? .5 : .15);
 
       // var b = MathUtil.applyDeadband(stick2.getX(), 0.08) ;
       // var a = MathUtil.applyDeadband(-stick2.getY(), 0.08);
@@ -99,11 +100,15 @@ public class Robot extends TimedRobot {
       if (stick.getRawButton(2)) {
         strafePercent = 0;
       }
-      var mod = (stick.getRawAxis(3) + 1) / 2;
-      fwdPercent *= mod; 
-      strafePercent *= mod;
-      rotPercent *= mod;
-      driveSubsystem.drivePercent(fwdPercent, strafePercent, rotPercent,!stick.getRawButton(3),a,b );
+      // var mod = (stick.getRawAxis(3) + 1) / 2;
+      // fwdPercent *= mod; 
+      // strafePercent *= mod;
+      // rotPercent *= mod;
+      if (fwdPercent!=0.0) {
+
+      System.err.println(fwdPercent);
+      }
+      driveSubsystem.drivePercent(fwdPercent, strafePercent, rotPercent,!stick.getAButton(),a,b );
 
       // if (controller.getBackButton()) {
       // driveSubsystem.zeroYaw();
