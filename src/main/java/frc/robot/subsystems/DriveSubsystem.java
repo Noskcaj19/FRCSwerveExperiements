@@ -119,6 +119,7 @@ public class DriveSubsystem extends SubsystemBase {
      * @return The pose.
      */
     public Pose2d getPose() {
+        System.out.println(odometry.getPoseMeters());
         return odometry.getPoseMeters();
     }
 
@@ -175,7 +176,7 @@ public class DriveSubsystem extends SubsystemBase {
         driveStates(swerveModuleStates);
     }
 
-    private void driveStates(SwerveModuleState[] swerveModuleStates) {
+    public void driveStates(SwerveModuleState[] swerveModuleStates) {
         SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates,
                 Constants.DriveConstants.kMaxVelocityMetersPerSecond);
 

@@ -27,6 +27,8 @@ public final class Main {
     // ShuffleUtil.set("null", "null", "null");
     // Stream.of(Test.class.getAnnotations()).forEach(v-> System.out.println(v.annotationType()));
     // Test.class.
+    System.out.println(Constants.kModuleType.getWheelDiameter());
+    System.out.println(Constants.kModuleType.getDriveReduction());
     RobotBase.startRobot(Robot::new);
   }
 }

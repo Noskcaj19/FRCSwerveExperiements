@@ -5,7 +5,10 @@
 package frc.robot;
 
 import java.util.List;
+import java.util.Optional;
 
+import com.choreo.lib.Choreo;
+import com.choreo.lib.ChoreoTrajectory;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 
 import edu.wpi.first.cameraserver.CameraServer;
@@ -15,11 +18,14 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.RunCommand;
@@ -57,8 +63,8 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
-    CameraServer.startAutomaticCapture();
-    CameraServer.startAutomaticCapture();
+    // CameraServer.startAutomaticCapture();
+    // CameraServer.startAutomaticCapture();
 
     var trigger = new JoystickButton(stick, 11);
     trigger.whileTrue(new AutoStrafeNote(driveSubsystem));
@@ -115,6 +121,8 @@ public class Robot extends TimedRobot {
       // driveSubsystem.recalEncoders();
     }, driveSubsystem));
     driveSubsystem.recalEncoders();
+    driveSubsystem.resetEncoders();
+    driveSubsystem.resetOdometry(new Pose2d());
   }
 
   @Override
@@ -138,8 +146,35 @@ public class Robot extends TimedRobot {
   public void simulationPeriodic() {
   }
 
-  public Command getAutonomousCommand() {
+  public Command getAutonomousCommand3() {
     return new PathPlannerAuto("New Auto");
+  }
+
+  public Command getAutonomousCommand() {
+    ChoreoTrajectory traj = Choreo.getTrajectory("NewPath"); //
+
+    return Choreo.choreoSwerveCommand(
+        traj, //
+        driveSubsystem::getPose, //
+        new PIDController(Constants.AutoConstants.kPXController, 0.0, 0.0), //
+        new PIDController(Constants.AutoConstants.kPYController, 0.0, 0.0), //
+        new PIDController(Constants.AutoConstants.kPThetaController, 0.0, 0.0), //
+        (ChassisSpeeds speeds) -> //
+        {
+          var swerveModuleStates = DriveConstants.kinematics.toSwerveModuleStates(
+              ChassisSpeeds.discretize(speeds, .02));
+          driveSubsystem.driveStates(swerveModuleStates);
+        },
+        // this.drive(new Translation2d(speeds.vxMetersPerSecond,
+        // speeds.vyMetersPerSecond)),
+        () -> {
+          Optional<DriverStation.Alliance> alliance = DriverStation.getAlliance();
+          var mirror = alliance.isPresent() && alliance.get() == Alliance.Red;
+          return mirror;
+        }, //
+        driveSubsystem //
+    );
+
   }
 
   public Command getAutonomousCommand2() {
