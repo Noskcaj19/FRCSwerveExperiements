@@ -32,6 +32,7 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.Constants.DriveConstants;
+import frc.robot.commands.AutoFaceApril3d;
 import frc.robot.commands.AutoStrafeNote;
 import frc.robot.subsystems.DriveSubsystem;
 
@@ -66,8 +67,8 @@ public class Robot extends TimedRobot {
     // CameraServer.startAutomaticCapture();
     // CameraServer.startAutomaticCapture();
 
-    var trigger = new JoystickButton(stick, 11);
-    trigger.whileTrue(new AutoStrafeNote(driveSubsystem));
+    new JoystickButton(stick, 11).whileTrue(new AutoStrafeNote(driveSubsystem));
+    new JoystickButton(stick, 10).whileTrue(new AutoFaceApril3d(driveSubsystem));
 
     driveSubsystem.setDefaultCommand(new RunCommand(() -> {
       var fast = stick.getTrigger();
