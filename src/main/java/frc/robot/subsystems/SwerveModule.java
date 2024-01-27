@@ -92,7 +92,12 @@ public class SwerveModule {
     var config = new MagnetSensorConfigs();
     config.AbsoluteSensorRange = AbsoluteSensorRangeValue.Signed_PlusMinusHalf;
     // config.MagnetSensor.SensorTimeBase = SensorTimeBase.PerSecond;
-    config.MagnetOffset = magnetOffset;
+
+    if (magnetOffset <= 0) {
+        config.MagnetOffset = (-magnetOffset) - .5;
+    } else {
+        config.MagnetOffset = (-magnetOffset) + .5;
+    }
     config.SensorDirection = SensorDirectionValue.CounterClockwise_Positive;
 
     m_absoluteEncoder.getConfigurator().apply(config);
