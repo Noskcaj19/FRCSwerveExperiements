@@ -12,13 +12,14 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.PIDCommand;
 import edu.wpi.first.wpilibj2.command.ProfiledPIDCommand;
 import frc.robot.Constants;
 import frc.robot.LimelightHelpers;
 import frc.robot.subsystems.DriveSubsystem;
-
 public class AutoFaceApril3d extends Command {
   private DriveSubsystem ds;
   private ProfiledPIDController pidY = new ProfiledPIDController(
@@ -47,6 +48,11 @@ public class AutoFaceApril3d extends Command {
   }
 
   public AutoFaceApril3d(DriveSubsystem ds) {
+    var tune = Shuffleboard.getTab("Tune");
+    tune.add("April PID X", pidX);
+    tune.add("April PID Y", pidY);
+    tune.add("April PID theta", pidTheta);
+
     pidX.setGoal(new State(0, 0));
     pidY.setGoal(new State(0.9, 0));
     pidTheta.setGoal(new State(0, 0));

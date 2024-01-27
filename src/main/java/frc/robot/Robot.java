@@ -22,18 +22,18 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
-import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
-import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.Constants.DriveConstants;
-import frc.robot.commands.AutoFaceApril3d;
-import frc.robot.commands.AutoStrafeNote;
 import frc.robot.subsystems.DriveSubsystem;
 
 /**
@@ -51,6 +51,7 @@ public class Robot extends TimedRobot {
   private Joystick stick = new Joystick(0);
   // private Joystick stick2 = new Joystick(1);
   private DriveSubsystem driveSubsystem = new DriveSubsystem();
+  private SendableChooser<Command> chooser = new SendableChooser<>();
 
   @Override
   public void robotPeriodic() {
@@ -64,13 +65,55 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
-    // CameraServer.startAutomaticCapture();
+    // DataLogManager.start();
+    // URCL.start();
+
+    // var sysIdRoutine = new SysIdRoutine(
+    // new SysIdRoutine.Config(),
+    // new SysIdRoutine.Mechanism(
+    // (voltage) -> driveSubsystem.runVolts(voltage),
+    // null, // No log consumer, since data is recorded by URCL
+    // driveSubsystem
+    // )
+    // );
+
+    // chooser.addOption("Quasi Forward",
+    // sysIdRoutine.quasistatic(SysIdRoutine.Direction.kForward));
+    // chooser.addOption("Quasi Backward",
+    // sysIdRoutine.quasistatic(SysIdRoutine.Direction.kReverse));
+    // chooser.addOption("Dynamic Forward",
+    // sysIdRoutine.dynamic(SysIdRoutine.Direction.kForward));
+    // chooser.addOption("Dynamic Backward",
+    // sysIdRoutine.dynamic(SysIdRoutine.Direction.kReverse));
+    // Shuffleboard.getTab("Tune").add("SysID Drivetrain", chooser);
+
+    CameraServer.startAutomaticCapture();
     // CameraServer.startAutomaticCapture();
 
-    new JoystickButton(stick, 11).whileTrue(new AutoStrafeNote(driveSubsystem));
-    new JoystickButton(stick, 10).whileTrue(new AutoFaceApril3d(driveSubsystem));
+    // new JoystickButton(stick, 11).whileTrue(new AutoStrafeNote(driveSubsystem));
+    // new JoystickButton(stick, 10).whileTrue(new AutoFaceApril3d(driveSubsystem));
 
-    driveSubsystem.setDefaultCommand(new RunCommand(() -> {
+    // var driveGamepad = new RunCommand(() -> {
+    // var fast = controller.getRightBumper();
+    // var fwdPercent = MathUtil.applyDeadband(-controller.getLeftY(), 0.08) * (fast
+    // ? 1 : .5);
+    // var strafePercent = MathUtil.applyDeadband(-controller.getLeftX(), 0.08) *
+    // (fast ? 1 : .5);
+    // var rotPercent = MathUtil.applyDeadband(controller.getRightX(), 0.08) * (fast
+    // ? .5 : .15);
+
+    // if (controller.getLeftBumper()) {
+    // strafePercent = 0;
+    // }
+    // driveSubsystem.drivePercent(fwdPercent, strafePercent,
+    // rotPercent,controller.getAButton(),0,0 );
+
+    // if (controller.getBackButton()) {
+    // driveSubsystem.zeroYaw();
+    // }
+    // }, driveSubsystem);
+
+    RunCommand driveJoystick = new RunCommand(() -> {
       var fast = stick.getTrigger();
       var fwdPercent = MathUtil.applyDeadband(-stick.getY(), 0.08) * (fast ? 1 : .5);
       var strafePercent = MathUtil.applyDeadband(-stick.getX(), 0.08) * (fast ? 1 : .5);
@@ -80,7 +123,7 @@ public class Robot extends TimedRobot {
       // var a = MathUtil.applyDeadband(-stick2.getY(), 0.08);
       var pov = stick.getPOV();
       var a = 0;
-      var b = 0 ;
+      var b = 0;
       if (pov == 45) {
         a = -1;
         b = 1;
@@ -95,32 +138,20 @@ public class Robot extends TimedRobot {
         b = 1;
       }
 
-      // var fast = controller.getRightBumper();
-      // var fwdPercent = MathUtil.applyDeadband(-controller.getLeftY(), 0.08) * (fast
-      // ? 1 : .5);
-      // var strafePercent = MathUtil.applyDeadband(controller.getLeftX(), 0.08) *
-      // (fast ? 1 : .5);
-      // var rotPercent = MathUtil.applyDeadband(controller.getRightX(),
-      // 0.08)*(fast?.5 : .15);
-
       if (stick.getRawButton(2)) {
         strafePercent = 0;
       }
       var mod = (stick.getRawAxis(3) + 1) / 2;
-      fwdPercent *= mod; 
+      fwdPercent *= mod;
       strafePercent *= mod;
       rotPercent *= mod;
-      driveSubsystem.drivePercent(fwdPercent, strafePercent, rotPercent,!stick.getRawButton(3),a,b );
+      driveSubsystem.drivePercent(fwdPercent, strafePercent, rotPercent, !stick.getRawButton(3), a, b);
 
-      // if (controller.getBackButton()) {
-      // driveSubsystem.zeroYaw();
-      // }
       if (stick.getRawButtonPressed(12)) {
         driveSubsystem.zeroYaw();
       }
-      // if (controller.getAButton())
-      // driveSubsystem.recalEncoders();
-    }, driveSubsystem));
+    }, driveSubsystem);
+    driveSubsystem.setDefaultCommand(driveJoystick);
     driveSubsystem.recalEncoders();
     driveSubsystem.resetEncoders();
     driveSubsystem.resetOdometry(new Pose2d());
@@ -152,6 +183,11 @@ public class Robot extends TimedRobot {
   }
 
   public Command getAutonomousCommand() {
+    return new InstantCommand();
+    // return chooser.getSelected();
+  }
+
+  public Command getAutonomousCommand22() {
     ChoreoTrajectory traj = Choreo.getTrajectory("NewPath"); //
 
     return Choreo.choreoSwerveCommand(
@@ -216,6 +252,6 @@ public class Robot extends TimedRobot {
     driveSubsystem.resetOdometry(exampleTrajectory.getInitialPose());
 
     // Run path following command, then stop at the end.
-    return swerveControllerCommand.andThen(() -> driveSubsystem.drivePercent(0, 0, 0, false,0,0));
+    return swerveControllerCommand.andThen(() -> driveSubsystem.drivePercent(0, 0, 0, false, 0, 0));
   }
 }

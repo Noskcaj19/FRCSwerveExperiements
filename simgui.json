@@ -1,7 +1,11 @@
 {
   "NTProvider": {
     "types": {
-      "/FMSInfo": "FMSInfo"
+      "/FMSInfo": "FMSInfo",
+      "/Shuffleboard/Tune/April PID X": "ProfiledPIDController",
+      "/Shuffleboard/Tune/April PID Y": "ProfiledPIDController",
+      "/Shuffleboard/Tune/April PID theta": "ProfiledPIDController",
+      "/Shuffleboard/Tune/SysID Drivetrain": "String Chooser"
     }
   },
   "NetworkTables Info": {
