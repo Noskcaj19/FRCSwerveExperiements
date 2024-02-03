@@ -10,6 +10,7 @@ import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.ReplanningConfig;
 
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -27,6 +28,8 @@ import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
 
 public class DriveSubsystem extends SubsystemBase {
+
+
 
             // comp offsets (outdated)
             // fl -0.247
@@ -163,6 +166,7 @@ public class DriveSubsystem extends SubsystemBase {
      */
     public void drivePercent(double xPercent, double yPercent, double rotPercent, boolean fieldRelative, double a, double b) {
         var fwdSpeed = fwdSpeedLimiter.calculate(xPercent) * Constants.DriveConstants.kMaxVelocityMetersPerSecond;
+        System.out.printf("p: %.2f f: %.2f\n", xPercent, fwdSpeed );
 
         var strafeSpeed = strafeSpeedLimiter.calculate(yPercent)
                 * Constants.DriveConstants.kMaxVelocityMetersPerSecond;
@@ -178,8 +182,8 @@ public class DriveSubsystem extends SubsystemBase {
 
         var swerveModuleStates = DriveConstants.kinematics.toSwerveModuleStates(
                         ChassisSpeeds.discretize(chasisSpeeds, .02),
-                        new Translation2d(DriveConstants.kTrackBaseMeters * a * 1.5,
-                                        DriveConstants.kTrackWidthMeters * b * 1.5));
+                        new Translation2d(DriveConstants.kTrackBaseMeters * a * 2.5,
+                                        DriveConstants.kTrackWidthMeters * b * 2.5));
                         // : new ChassisSpeeds(fwdSpeed, strafeSpeed, rotSpeed) );
         driveStates(swerveModuleStates);
     }

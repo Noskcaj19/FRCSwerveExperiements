@@ -7,6 +7,8 @@ package frc.robot;
 import java.util.List;
 import java.util.Optional;
 
+import org.littletonrobotics.urcl.URCL;
+
 import com.choreo.lib.Choreo;
 import com.choreo.lib.ChoreoTrajectory;
 import com.pathplanner.lib.commands.PathPlannerAuto;
@@ -22,18 +24,23 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
+import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.DriveConstants;
+// import frc.robot.commands.AutoFaceApril3d;
+import frc.robot.commands.AutoStrafeNote;
 import frc.robot.subsystems.DriveSubsystem;
 
 /**
@@ -65,32 +72,32 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
-    // DataLogManager.start();
-    // URCL.start();
+    DataLogManager.start();
+    URCL.start();
 
-    // var sysIdRoutine = new SysIdRoutine(
-    // new SysIdRoutine.Config(),
-    // new SysIdRoutine.Mechanism(
-    // (voltage) -> driveSubsystem.runVolts(voltage),
-    // null, // No log consumer, since data is recorded by URCL
-    // driveSubsystem
-    // )
-    // );
+    var sysIdRoutine = new SysIdRoutine(
+    new SysIdRoutine.Config(),
+    new SysIdRoutine.Mechanism(
+    (voltage) -> driveSubsystem.runVolts(voltage),
+    null, // No log consumer, since data is recorded by URCL
+    driveSubsystem
+    )
+    );
 
-    // chooser.addOption("Quasi Forward",
-    // sysIdRoutine.quasistatic(SysIdRoutine.Direction.kForward));
-    // chooser.addOption("Quasi Backward",
-    // sysIdRoutine.quasistatic(SysIdRoutine.Direction.kReverse));
-    // chooser.addOption("Dynamic Forward",
-    // sysIdRoutine.dynamic(SysIdRoutine.Direction.kForward));
-    // chooser.addOption("Dynamic Backward",
-    // sysIdRoutine.dynamic(SysIdRoutine.Direction.kReverse));
-    // Shuffleboard.getTab("Tune").add("SysID Drivetrain", chooser);
+    chooser.addOption("Quasi Forward",
+    sysIdRoutine.quasistatic(SysIdRoutine.Direction.kForward));
+    chooser.addOption("Quasi Backward",
+    sysIdRoutine.quasistatic(SysIdRoutine.Direction.kReverse));
+    chooser.addOption("Dynamic Forward",
+    sysIdRoutine.dynamic(SysIdRoutine.Direction.kForward));
+    chooser.addOption("Dynamic Backward",
+    sysIdRoutine.dynamic(SysIdRoutine.Direction.kReverse));
+    Shuffleboard.getTab("Tune").add("SysID Drivetrain", chooser);
 
     CameraServer.startAutomaticCapture();
     // CameraServer.startAutomaticCapture();
 
-    // new JoystickButton(stick, 11).whileTrue(new AutoStrafeNote(driveSubsystem));
+    new JoystickButton(stick, 11).whileTrue(new AutoStrafeNote(driveSubsystem));
     // new JoystickButton(stick, 10).whileTrue(new AutoFaceApril3d(driveSubsystem));
 
     // var driveGamepad = new RunCommand(() -> {
@@ -141,10 +148,10 @@ public class Robot extends TimedRobot {
       if (stick.getRawButton(2)) {
         strafePercent = 0;
       }
-      var mod = (stick.getRawAxis(3) + 1) / 2;
-      fwdPercent *= mod;
-      strafePercent *= mod;
-      rotPercent *= mod;
+      // var mod = (stick.getRawAxis(3) + 1) / 2;
+      // fwdPercent *= mod;
+      // strafePercent *= mod;
+      // rotPercent *= mod;
       driveSubsystem.drivePercent(fwdPercent, strafePercent, rotPercent, !stick.getRawButton(3), a, b);
 
       if (stick.getRawButtonPressed(12)) {
@@ -166,8 +173,17 @@ public class Robot extends TimedRobot {
   }
 
   @Override
+  public void teleopExit() {
+  }
+
+  @Override
   public void autonomousInit() {
+    driveSubsystem.resetEncoders();
     getAutonomousCommand().schedule();
+  }
+
+  @Override
+  public void autonomousExit() {
   }
 
   double map(double x, double in_min, double in_max, double out_min, double out_max) {
@@ -183,8 +199,8 @@ public class Robot extends TimedRobot {
   }
 
   public Command getAutonomousCommand() {
-    return new InstantCommand();
-    // return chooser.getSelected();
+    // return new InstantCommand();
+    return chooser.getSelected();
   }
 
   public Command getAutonomousCommand22() {

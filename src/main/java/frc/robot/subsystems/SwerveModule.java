@@ -21,6 +21,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Voltage;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -58,6 +59,9 @@ public class SwerveModule {
       200 * 2);
   private TrapezoidProfile.State m_lastProfiledReference = new TrapezoidProfile.State();
   private int turningEncoderId;
+
+// SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(0.18359, 3.0413, 0.046209);
+    SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(0.18359, 3.0413);
 
   private double getAbsRad() {
     return m_absoluteEncoder.getAbsolutePosition().getValueAsDouble() * Math.PI * 2;
@@ -204,8 +208,11 @@ public class SwerveModule {
     // SwerveModuleState state = optimizeModuleState(desiredState);
     SwerveModuleState state = desiredState;
 
+    var fff = feedforward.calculate(desiredState.speedMetersPerSecond);
+    System.out.println(fff);
+
     // Calculate the turning motor output from the turning PID controller.
-    m_driveMotor.setVoltage((state.speedMetersPerSecond / Constants.DriveConstants.kMaxVelocityMetersPerSecond) * 12);
+    m_driveMotor.setVoltage(((state.speedMetersPerSecond / Constants.DriveConstants.kMaxVelocityMetersPerSecond) * 12)+fff);
 
 
     pidController.setReference(state.angle.getRadians(), ControlType.kPosition);
