@@ -122,9 +122,9 @@ public class Robot extends TimedRobot {
 
     RunCommand driveJoystick = new RunCommand(() -> {
       var fast = stick.getTrigger();
-      var fwdPercent = MathUtil.applyDeadband(-stick.getY(), 0.08) * (fast ? 1 : .5);
-      var strafePercent = MathUtil.applyDeadband(-stick.getX(), 0.08) * (fast ? 1 : .5);
-      var rotPercent = MathUtil.applyDeadband(-stick.getTwist(), 0.08) * (fast ? .5 : .15);
+      var fwdPercent = MathUtil.applyDeadband(-stick.getY(), 0.08) * (fast ? .8 : .375);
+      var strafePercent = MathUtil.applyDeadband(-stick.getX(), 0.08) * (fast ? .8 : .375);
+      var rotPercent = MathUtil.applyDeadband(-stick.getTwist(), 0.08) * (fast ? .3 : .075);
 
       // var b = MathUtil.applyDeadband(stick2.getX(), 0.08) ;
       // var a = MathUtil.applyDeadband(-stick2.getY(), 0.08);
@@ -178,7 +178,8 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousInit() {
-    driveSubsystem.resetEncoders();
+    // driveSubsystem.resetEncoders();
+    
     getAutonomousCommand().schedule();
   }
 
@@ -199,8 +200,8 @@ public class Robot extends TimedRobot {
   }
 
   public Command getAutonomousCommand() {
-    // return new InstantCommand();
-    return chooser.getSelected();
+    return new InstantCommand();
+    // return chooser.getSelected();
   }
 
   public Command getAutonomousCommand22() {

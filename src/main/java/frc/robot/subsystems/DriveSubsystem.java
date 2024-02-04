@@ -61,9 +61,9 @@ public class DriveSubsystem extends SubsystemBase {
           true,
            -0.287, true);
 
-    private final SlewRateLimiter fwdSpeedLimiter = new SlewRateLimiter(2);
-    private final SlewRateLimiter strafeSpeedLimiter = new SlewRateLimiter(2);
-    private final SlewRateLimiter rotLimiter = new SlewRateLimiter(2);
+    private final SlewRateLimiter fwdSpeedLimiter = new SlewRateLimiter(1.25);
+    private final SlewRateLimiter strafeSpeedLimiter = new SlewRateLimiter(1.25);
+    private final SlewRateLimiter rotLimiter = new SlewRateLimiter(1);
 
     private final AHRS gyro = new AHRS(SPI.Port.kMXP);
 
