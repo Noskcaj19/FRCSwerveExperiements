@@ -10,7 +10,12 @@ import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.ReplanningConfig;
 
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import au.grapplerobotics.ConfigurationFailedException;
+import au.grapplerobotics.LaserCan;
+import au.grapplerobotics.LaserCan.RangingMode;
+import au.grapplerobotics.LaserCan.RegionOfInterest;
+import au.grapplerobotics.LaserCan.TimingBudget;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -78,9 +83,18 @@ public class DriveSubsystem extends SubsystemBase {
                     backRight.getPosition()
             });
 
+    private LaserCan lc = new LaserCan(29);
+
     /** Creates a new DriveSubsystem. */
     public DriveSubsystem() {
-         AutoBuilder.configureHolonomic(
+        try {
+            lc.setRangingMode(RangingMode.SHORT);
+            lc.setTimingBudget(TimingBudget.TIMING_BUDGET_50MS);
+            lc.setRegionOfInterest(new RegionOfInterest(8, 8, 16, 16));
+        } catch (ConfigurationFailedException e) {
+            e.printStackTrace();
+        }
+        AutoBuilder.configureHolonomic(
                 this::getPose, // Robot pose supplier
                 this::resetOdometry, // Method to reset odometry (will be called if your auto has a starting pose)
                 this::getSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
@@ -166,6 +180,14 @@ public class DriveSubsystem extends SubsystemBase {
      */
     public void drivePercent(double xPercent, double yPercent, double rotPercent, boolean fieldRelative, double a, double b) {
         var fwdSpeed = fwdSpeedLimiter.calculate(xPercent) * Constants.DriveConstants.kMaxVelocityMetersPerSecond;
+        LaserCan.Measurement measurement = lc.getMeasurement();
+        if (measurement != null && measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT) {
+            final var offset = 100;
+            if (measurement.distance_mm < 500+offset) {
+                fwdSpeed *= MathUtil.clamp((measurement.distance_mm- offset) / 500, 0, 1);
+            }
+        }
+        // var fwdSpeed 
         System.out.printf("p: %.2f f: %.2f\n", xPercent, fwdSpeed );
 
         var strafeSpeed = strafeSpeedLimiter.calculate(yPercent)
