@@ -30,8 +30,21 @@ public class AutoGoto extends Command {
     private final TrapezoidProfile.Constraints limits = new TrapezoidProfile.Constraints(
             Units.MetersPerSecond.of(1000),
             Units.MetersPerSecondPerSecond.of(200));
-    private final ProfiledPIDController xPID = new ProfiledPIDController(ktp, kti, ktd, limits);
-    private final ProfiledPIDController yPID = new ProfiledPIDController(ktp, kti, ktd, limits);
+private final double ku = 9.835;
+    private final double tu = 0.8;
+
+    private final ProfiledPIDController xPID = new ProfiledPIDController(
+      .6*ku,
+      .5*tu,
+      .125*tu,
+       limits);
+    private final ProfiledPIDController yPID = new ProfiledPIDController(
+      .6*ku,
+      .5*tu,
+      .125*tu,
+       limits);
+//    private final ProfiledPIDController xPID = new ProfiledPIDController(ktp, kti, ktd, limits);
+//    private final ProfiledPIDController yPID = new ProfiledPIDController(ktp, kti, ktd, limits);
     private double targetThresholdDistance = Units.Inches.of(6).in(Units.Meters);
 
     public AutoGoto(DriveSubsystem ds, Translation2d movement) {
@@ -41,7 +54,9 @@ public class AutoGoto extends Command {
 
         xPID.setGoal(movement.getX());
         yPID.setGoal(movement.getY());
+
         Shuffleboard.getTab("Tune").add("AutoGoto xPID", xPID);
+
         
         addRequirements(ds);
     }
@@ -54,6 +69,8 @@ public class AutoGoto extends Command {
     @Override
     public void execute() {
         var relativePose = ds.getPose().relativeTo(startingPose);
+
+        NetworkTableInstance.getDefault().getEntry("/Shuffleboard/Debug/Pose").setValue(relativePose.getX());
 
         var xSpeed = xPID.calculate(relativePose.getX());
         var ySpeed = yPID.calculate(relativePose.getY());
@@ -73,9 +90,9 @@ public class AutoGoto extends Command {
 
     @Override
     public boolean isFinished() {
-        var dist = ds.getPose().relativeTo(startingPose).getTranslation().getDistance(movement);
-        return false;
-        // return (dist < targetThresholdDistance);
+        var dist = ds.getPose().relativeTo(startingPose).getTranslation().minus(movement).getDistance(movement);
+        // return false;
+        return (dist < targetThresholdDistance);
     }
 
 }

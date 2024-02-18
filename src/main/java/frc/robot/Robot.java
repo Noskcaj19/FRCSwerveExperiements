@@ -99,7 +99,7 @@ public class Robot extends TimedRobot {
 
     new JoystickButton(stick, 11).whileTrue(new AutoStrafeNote(driveSubsystem));
     // new JoystickButton(stick, 10).whileTrue(new AutoFaceApril3d(driveSubsystem));
-    new JoystickButton(stick, 9).whileTrue(new AutoGoto(driveSubsystem, new Translation2d(.15, 0)));
+    new JoystickButton(stick, 9).whileTrue(new AutoGoto(driveSubsystem, new Translation2d(1, 0)));
     new JoystickButton(stick, 7)
         .whileTrue(new InstantCommand(() -> driveSubsystem.resetOdometry(new Pose2d()), driveSubsystem));
 
