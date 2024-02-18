@@ -1,3 +1,4 @@
+package frc.robot.commands.auto.command;
 // package frc.robot.commands;
 
 // import edu.wpi.first.math.MathUtil;

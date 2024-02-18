@@ -209,7 +209,6 @@ public class SwerveModule {
     SwerveModuleState state = desiredState;
 
     var fff = feedforward.calculate(desiredState.speedMetersPerSecond);
-    System.out.println(fff);
 
     // Calculate the turning motor output from the turning PID controller.
     m_driveMotor.setVoltage(((state.speedMetersPerSecond / Constants.DriveConstants.kMaxVelocityMetersPerSecond) * 12)+fff);
@@ -256,7 +255,6 @@ public class SwerveModule {
   }
 
   public void runVolts(Measure<Voltage> voltage) {
-    System.out.println("running volts");
     m_driveMotor.setVoltage(voltage.magnitude());
     pidController.setReference(0, ControlType.kPosition);
   }

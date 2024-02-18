@@ -23,23 +23,26 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
-import edu.wpi.first.math.trajectory.TrajectoryGenerator; import edu.wpi.first.wpilibj.DataLogManager;
+import edu.wpi.first.math.trajectory.TrajectoryGenerator;
+import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.DriveConstants;
-// import frc.robot.commands.AutoFaceApril3d;
-import frc.robot.commands.AutoStrafeNote;
+import frc.robot.commands.auto.command.AutoFaceApril;
+import frc.robot.commands.auto.command.AutoGoto;
+import frc.robot.commands.auto.command.AutoStrafeNote;
 import frc.robot.subsystems.DriveSubsystem;
 
 /**
@@ -75,22 +78,20 @@ public class Robot extends TimedRobot {
     URCL.start();
 
     var sysIdRoutine = new SysIdRoutine(
-    new SysIdRoutine.Config(),
-    new SysIdRoutine.Mechanism(
-    (voltage) -> driveSubsystem.runVolts(voltage),
-    null, // No log consumer, since data is recorded by URCL
-    driveSubsystem
-    )
-    );
+        new SysIdRoutine.Config(),
+        new SysIdRoutine.Mechanism(
+            (voltage) -> driveSubsystem.runVolts(voltage),
+            null, // No log consumer, since data is recorded by URCL
+            driveSubsystem));
 
     chooser.addOption("Quasi Forward",
-    sysIdRoutine.quasistatic(SysIdRoutine.Direction.kForward));
+        sysIdRoutine.quasistatic(SysIdRoutine.Direction.kForward));
     chooser.addOption("Quasi Backward",
-    sysIdRoutine.quasistatic(SysIdRoutine.Direction.kReverse));
+        sysIdRoutine.quasistatic(SysIdRoutine.Direction.kReverse));
     chooser.addOption("Dynamic Forward",
-    sysIdRoutine.dynamic(SysIdRoutine.Direction.kForward));
+        sysIdRoutine.dynamic(SysIdRoutine.Direction.kForward));
     chooser.addOption("Dynamic Backward",
-    sysIdRoutine.dynamic(SysIdRoutine.Direction.kReverse));
+        sysIdRoutine.dynamic(SysIdRoutine.Direction.kReverse));
     Shuffleboard.getTab("Tune").add("SysID Drivetrain", chooser);
 
     CameraServer.startAutomaticCapture();
@@ -98,6 +99,9 @@ public class Robot extends TimedRobot {
 
     new JoystickButton(stick, 11).whileTrue(new AutoStrafeNote(driveSubsystem));
     // new JoystickButton(stick, 10).whileTrue(new AutoFaceApril3d(driveSubsystem));
+    new JoystickButton(stick, 9).whileTrue(new AutoGoto(driveSubsystem, new Translation2d(.15, 0)));
+    new JoystickButton(stick, 7)
+        .whileTrue(new InstantCommand(() -> driveSubsystem.resetOdometry(new Pose2d()), driveSubsystem));
 
     // var driveGamepad = new RunCommand(() -> {
     // var fast = controller.getRightBumper();
@@ -178,7 +182,7 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     // driveSubsystem.resetEncoders();
-    
+
     getAutonomousCommand().schedule();
   }
 
@@ -241,7 +245,7 @@ public class Robot extends TimedRobot {
     // An example trajectory to follow. All units in meters.
     Trajectory exampleTrajectory = TrajectoryGenerator.generateTrajectory(
         // Start at the origin facing the +X direction
-        new Pose2d(new Integer(0), 0, new Rotation2d(0)),
+        new Pose2d(0, 0, new Rotation2d(0)),
         // Pass through these two interior waypoints, making an 's' curve path
         List.of(new Translation2d(1, 1)),
         // End 3 meters straight ahead of where we started, facing forward

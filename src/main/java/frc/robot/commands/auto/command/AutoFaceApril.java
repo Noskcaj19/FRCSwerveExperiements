@@ -1,4 +1,4 @@
-package frc.robot.commands;
+package frc.robot.commands.auto.command;
 
 import static frc.robot.Constants.DriveConstants.kMaxVelocityMetersPerSecond;
 
@@ -22,7 +22,7 @@ public class AutoFaceApril extends Command {
       .6*ku,
       .5*tu,
       .125*tu,
-      new TrapezoidProfile.Constraints(5, 3/1.5  ));
+      new TrapezoidProfile.Constraints(5, 3/1.5));
 
   private static double[] getTagPose() {
     var pose = LimelightHelpers.getTargetPose_RobotSpace("");

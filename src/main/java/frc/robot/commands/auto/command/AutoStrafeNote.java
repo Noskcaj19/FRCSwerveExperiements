@@ -1,4 +1,4 @@
-package frc.robot.commands;
+package frc.robot.commands.auto.command;
 
 import static frc.robot.Constants.DriveConstants.kMaxVelocityMetersPerSecond;
 

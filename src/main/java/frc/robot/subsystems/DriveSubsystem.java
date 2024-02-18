@@ -144,7 +144,6 @@ public class DriveSubsystem extends SubsystemBase {
      * @return The pose.
      */
     public Pose2d getPose() {
-        System.out.println(odometry.getPoseMeters());
         return odometry.getPoseMeters();
     }
 
@@ -188,7 +187,7 @@ public class DriveSubsystem extends SubsystemBase {
             }
         }
         // var fwdSpeed 
-        System.out.printf("p: %.2f f: %.2f\n", xPercent, fwdSpeed );
+        // System.out.printf("p: %.2f f: %.2f\n", xPercent, fwdSpeed );
 
         var strafeSpeed = strafeSpeedLimiter.calculate(yPercent)
                 * Constants.DriveConstants.kMaxVelocityMetersPerSecond;
