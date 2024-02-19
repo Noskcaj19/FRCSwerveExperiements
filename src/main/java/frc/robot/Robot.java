@@ -44,6 +44,7 @@ import frc.robot.commands.auto.command.AutoFaceApril;
 import frc.robot.commands.auto.command.AutoGoto;
 import frc.robot.commands.auto.command.AutoStrafeNote;
 import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.subsystems.Intake;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -60,6 +61,7 @@ public class Robot extends TimedRobot {
   private Joystick stick = new Joystick(0);
   // private Joystick stick2 = new Joystick(1);
   private DriveSubsystem driveSubsystem = new DriveSubsystem();
+  private Intake intakeSubsystem = new Intake();
   private SendableChooser<Command> chooser = new SendableChooser<>();
 
   @Override
@@ -94,7 +96,7 @@ public class Robot extends TimedRobot {
         sysIdRoutine.dynamic(SysIdRoutine.Direction.kReverse));
     Shuffleboard.getTab("Tune").add("SysID Drivetrain", chooser);
 
-    CameraServer.startAutomaticCapture();
+    // CameraServer.startAutomaticCapture();
     // CameraServer.startAutomaticCapture();
 
     new JoystickButton(stick, 11).whileTrue(new AutoStrafeNote(driveSubsystem));
@@ -102,6 +104,11 @@ public class Robot extends TimedRobot {
     new JoystickButton(stick, 9).whileTrue(new AutoGoto(driveSubsystem, new Translation2d(1, 0)));
     new JoystickButton(stick, 7)
         .whileTrue(new InstantCommand(() -> driveSubsystem.resetOdometry(new Pose2d()), driveSubsystem));
+
+    new JoystickButton(stick, 4)
+        .whileTrue(
+            new RunCommand(() -> intakeSubsystem.go(.5), intakeSubsystem)
+                .finallyDo(() -> intakeSubsystem.stop()));
 
     // var driveGamepad = new RunCommand(() -> {
     // var fast = controller.getRightBumper();

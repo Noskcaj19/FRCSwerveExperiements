@@ -18,6 +18,7 @@ import au.grapplerobotics.LaserCan.TimingBudget;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -33,11 +34,11 @@ import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
 
 public class DriveSubsystem extends SubsystemBase {
-            // practice offsets
-        //     -0.115
-        //     0.051
-        //     -0.234
-        //    -0.287
+    // practice offsets
+    // -0.115
+    // 0.051
+    // -0.234
+    // -0.287
 
     private SwerveModule frontLeft = new SwerveModule(15,
             14,
@@ -49,20 +50,20 @@ public class DriveSubsystem extends SubsystemBase {
             12,
             19,
             false,
-           true,
-           0, false);
+            true,
+            0, false);
     private SwerveModule backLeft = new SwerveModule(17,
             16,
             21,
             false,
-           true,
+            true,
             0.172, false);
     private SwerveModule backRight = new SwerveModule(11,
             10,
             18,
             false,
-          true,
-           -0.429, true);
+            true,
+            -0.429, true);
 
     private final SlewRateLimiter fwdSpeedLimiter = new SlewRateLimiter(1.25);
     private final SlewRateLimiter strafeSpeedLimiter = new SlewRateLimiter(1.25);
@@ -97,11 +98,12 @@ public class DriveSubsystem extends SubsystemBase {
                 this::resetOdometry, // Method to reset odometry (will be called if your auto has a starting pose)
                 this::getSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
                 (ChassisSpeeds speeds) -> {
-                                 var swerveModuleStates = DriveConstants.kinematics.toSwerveModuleStates(
-                                                 ChassisSpeeds.discretize(speeds, .02));
-                                 driveStates(swerveModuleStates);
+                    var swerveModuleStates = DriveConstants.kinematics.toSwerveModuleStates(
+                            ChassisSpeeds.discretize(speeds, .02));
+                    driveStates(swerveModuleStates);
                 }, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
-                new HolonomicPathFollowerConfig( // HolonomicPathFollowerConfig, this should likely live in your Constants class
+                new HolonomicPathFollowerConfig( // HolonomicPathFollowerConfig, this should likely live in your
+                                                 // Constants class
                         new PIDConstants(9.5, 0.0, 0.0), // Translation PID constants
                         new PIDConstants(9, 0.0, 0.0), // Rotation PID constants
                         1.5, // Max module speed, in m/s
@@ -109,7 +111,8 @@ public class DriveSubsystem extends SubsystemBase {
                         new ReplanningConfig() // Default path replanning config. See the API for the options here
                 ),
                 () -> {
-                    // Boolean supplier that controls when the path will be mirrored for the red alliance
+                    // Boolean supplier that controls when the path will be mirrored for the red
+                    // alliance
                     // This will flip the path being followed to the red side of the field.
                     // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
 
@@ -125,6 +128,7 @@ public class DriveSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
+        // System.out.printf("r: %.2f p: %.2f y: %.2f\n", gyro.getRoll(), gyro.getPitch(), gyro.getYaw());
         // Update the odometry in the periodic block
         odometry.update(
                 gyro.getRotation2d(),
@@ -175,16 +179,17 @@ public class DriveSubsystem extends SubsystemBase {
      * @param fieldRelative Whether the provided x and y speeds are relative to the
      *                      field.
      */
-    public void drivePercent(double xPercent, double yPercent, double rotPercent, boolean fieldRelative, double a, double b) {
+    public void drivePercent(double xPercent, double yPercent, double rotPercent, boolean fieldRelative, double a,
+            double b) {
         var fwdSpeed = fwdSpeedLimiter.calculate(xPercent) * Constants.DriveConstants.kMaxVelocityMetersPerSecond;
         LaserCan.Measurement measurement = lc.getMeasurement();
         if (measurement != null && measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT) {
             final var offset = 100;
-            if (measurement.distance_mm < 500+offset) {
-                fwdSpeed *= MathUtil.clamp((measurement.distance_mm- offset) / 500, 0, 1);
+            if (measurement.distance_mm < 500 + offset) {
+                fwdSpeed *= MathUtil.clamp((measurement.distance_mm - offset) / 500, 0, 1);
             }
         }
-        // var fwdSpeed 
+        // var fwdSpeed
         // System.out.printf("p: %.2f f: %.2f\n", xPercent, fwdSpeed );
 
         var strafeSpeed = strafeSpeedLimiter.calculate(yPercent)
@@ -194,16 +199,16 @@ public class DriveSubsystem extends SubsystemBase {
                 / 1;
 
         var chasisSpeeds = fieldRelative
-                        ? ChassisSpeeds.fromFieldRelativeSpeeds(
-                                        fwdSpeed, strafeSpeed, rotSpeed,
-                                        gyro.getRotation2d())
-                        : new ChassisSpeeds(fwdSpeed, strafeSpeed, rotSpeed);
+                ? ChassisSpeeds.fromFieldRelativeSpeeds(
+                        fwdSpeed, strafeSpeed, rotSpeed,
+                        gyro.getRotation2d().plus(Rotation2d.fromDegrees(0)))
+                : new ChassisSpeeds(fwdSpeed, strafeSpeed, rotSpeed);
 
         var swerveModuleStates = DriveConstants.kinematics.toSwerveModuleStates(
-                        ChassisSpeeds.discretize(chasisSpeeds, .02),
-                        new Translation2d(DriveConstants.kTrackBaseMeters * a * 2.5,
-                                        DriveConstants.kTrackWidthMeters * b * 2.5));
-                        // : new ChassisSpeeds(fwdSpeed, strafeSpeed, rotSpeed) );
+                ChassisSpeeds.discretize(chasisSpeeds, .02),
+                new Translation2d(DriveConstants.kTrackBaseMeters * a * 2.5,
+                        DriveConstants.kTrackWidthMeters * b * 2.5));
+        // : new ChassisSpeeds(fwdSpeed, strafeSpeed, rotSpeed) );
         driveStates(swerveModuleStates);
     }
 
@@ -211,12 +216,12 @@ public class DriveSubsystem extends SubsystemBase {
         SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates,
                 Constants.DriveConstants.kMaxVelocityMetersPerSecond);
 
-         SwerveModuleState[] optimizedSwerveModuleStates = {
+        SwerveModuleState[] optimizedSwerveModuleStates = {
                 frontLeft.optimizeModuleState(swerveModuleStates[0]),
                 frontRight.optimizeModuleState(swerveModuleStates[1]),
                 backLeft.optimizeModuleState(swerveModuleStates[2]),
                 backRight.optimizeModuleState(swerveModuleStates[3]),
-         };
+        };
 
         // var flTheta = swerveModuleStates[0].angle.minus()
         var flTheta = optimizedSwerveModuleStates[0].angle.minus(frontLeft.getState().angle);
@@ -225,10 +230,9 @@ public class DriveSubsystem extends SubsystemBase {
         var brTheta = optimizedSwerveModuleStates[3].angle.minus(backRight.getState().angle);
 
         var errorNumerator = Math.abs(flTheta.getCos()) + Math.abs(frTheta.getCos())
-        + Math.abs(blTheta.getCos())
-        + Math.abs(brTheta.getCos());
+                + Math.abs(blTheta.getCos())
+                + Math.abs(brTheta.getCos());
         var error = errorNumerator / 4;
-
 
         optimizedSwerveModuleStates[0].speedMetersPerSecond *= error;
         optimizedSwerveModuleStates[1].speedMetersPerSecond *= error;
@@ -255,26 +259,25 @@ public class DriveSubsystem extends SubsystemBase {
         backRight.setDesiredState(desiredStates[3]);
     }
 
-      public SwerveModuleState[] getModuleStates() {
-    SwerveModuleState[] states = {
-        frontLeft.getState(),
-        frontRight.getState(),
-        backLeft.getState(),
-        backRight.getState(),
-    };
-    return states;
-  }
+    public SwerveModuleState[] getModuleStates() {
+        SwerveModuleState[] states = {
+                frontLeft.getState(),
+                frontRight.getState(),
+                backLeft.getState(),
+                backRight.getState(),
+        };
+        return states;
+    }
 
-  public SwerveModulePosition[] getPositions() {
-    SwerveModulePosition[] positions = {
-        frontLeft.getPosition(),
-        frontRight.getPosition(),
-        backLeft.getPosition(),
-        backRight.getPosition(),
-    };
-    return positions;
-  }
-
+    public SwerveModulePosition[] getPositions() {
+        SwerveModulePosition[] positions = {
+                frontLeft.getPosition(),
+                frontRight.getPosition(),
+                backLeft.getPosition(),
+                backRight.getPosition(),
+        };
+        return positions;
+    }
 
     /** Resets the drive encoders to currently read a position of 0. */
     public void resetEncoders() {
