@@ -33,38 +33,36 @@ import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
 
 public class DriveSubsystem extends SubsystemBase {
+            // practice offsets
+        //     -0.115
+        //     0.051
+        //     -0.234
+        //    -0.287
 
-
-
-            // comp offsets (outdated)
-            // fl -0.247
-            // fr -.437
-            // bl 0.325
-            // br -0.072
     private SwerveModule frontLeft = new SwerveModule(15,
             14,
             20,
             false,
             true,
-            -0.115, false);
+            -0.137, false);
     private SwerveModule frontRight = new SwerveModule(13,
             12,
             19,
             false,
            true,
-            0.051, false);
+           0, false);
     private SwerveModule backLeft = new SwerveModule(17,
             16,
             21,
             false,
            true,
-            -0.234, false);
+            0.172, false);
     private SwerveModule backRight = new SwerveModule(11,
             10,
             18,
             false,
           true,
-           -0.287, true);
+           -0.429, true);
 
     private final SlewRateLimiter fwdSpeedLimiter = new SlewRateLimiter(1.25);
     private final SlewRateLimiter strafeSpeedLimiter = new SlewRateLimiter(1.25);
