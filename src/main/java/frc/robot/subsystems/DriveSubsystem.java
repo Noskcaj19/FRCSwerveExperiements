@@ -40,6 +40,9 @@ public class DriveSubsystem extends SubsystemBase {
     // -0.234
     // -0.287
 
+    
+    // wheel base 24.5 by 15.75
+    // 0.6223 by 0.40004999999999996
     private SwerveModule frontLeft = new SwerveModule(15,
             14,
             20,
@@ -82,17 +85,17 @@ public class DriveSubsystem extends SubsystemBase {
                     backRight.getPosition()
             });
 
-    private LaserCan lc = new LaserCan(29);
+    // private LaserCan lc = new LaserCan(29);
 
     /** Creates a new DriveSubsystem. */
     public DriveSubsystem() {
-        try {
-            lc.setRangingMode(RangingMode.SHORT);
-            lc.setTimingBudget(TimingBudget.TIMING_BUDGET_50MS);
-            lc.setRegionOfInterest(new RegionOfInterest(8, 8, 16, 16));
-        } catch (ConfigurationFailedException e) {
-            e.printStackTrace();
-        }
+        // try {
+        //     lc.setRangingMode(RangingMode.SHORT);
+        //     lc.setTimingBudget(TimingBudget.TIMING_BUDGET_50MS);
+        //     lc.setRegionOfInterest(new RegionOfInterest(8, 8, 16, 16));
+        // } catch (ConfigurationFailedException e) {
+        //     e.printStackTrace();
+        // }
         AutoBuilder.configureHolonomic(
                 this::getPose, // Robot pose supplier
                 this::resetOdometry, // Method to reset odometry (will be called if your auto has a starting pose)
@@ -182,13 +185,13 @@ public class DriveSubsystem extends SubsystemBase {
     public void drivePercent(double xPercent, double yPercent, double rotPercent, boolean fieldRelative, double a,
             double b) {
         var fwdSpeed = fwdSpeedLimiter.calculate(xPercent) * Constants.DriveConstants.kMaxVelocityMetersPerSecond;
-        LaserCan.Measurement measurement = lc.getMeasurement();
-        if (measurement != null && measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT) {
-            final var offset = 100;
-            if (measurement.distance_mm < 500 + offset) {
-                fwdSpeed *= MathUtil.clamp((measurement.distance_mm - offset) / 500, 0, 1);
-            }
-        }
+        // LaserCan.Measurement measurement = lc.getMeasurement();
+        // if (measurement != null && measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT) {
+        //     final var offset = 100;
+        //     if (measurement.distance_mm < 500 + offset) {
+        //         fwdSpeed *= MathUtil.clamp((measurement.distance_mm - offset) / 500, 0, 1);
+        //     }
+        // }
         // var fwdSpeed
         // System.out.printf("p: %.2f f: %.2f\n", xPercent, fwdSpeed );
 

@@ -29,6 +29,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -106,24 +107,31 @@ public class Robot extends TimedRobot {
         .whileTrue(new InstantCommand(() -> driveSubsystem.resetOdometry(new Pose2d()), driveSubsystem));
 
     new JoystickButton(stick, 4)
+    // new JoystickButton(controller, 6)
         .whileTrue(
-            new RunCommand(() -> intakeSubsystem.go(.5), intakeSubsystem)
-                .finallyDo(() -> intakeSubsystem.stop()));
+            new RunCommand(() -> intakeSubsystem.intake(), intakeSubsystem)
+                .finallyDo(() -> intakeSubsystem.intakeOff()));
 
-    // var driveGamepad = new RunCommand(() -> {
+    new JoystickButton(stick, 2)
+    // new JoystickButton(controller, 6)
+        .whileTrue(
+            new RunCommand(() -> intakeSubsystem.shootOn(), intakeSubsystem)
+                .finallyDo(() -> intakeSubsystem.shootOff()));
+
+    // var driveJoystick = new RunCommand(() -> {
     // var fast = controller.getRightBumper();
-    // var fwdPercent = MathUtil.applyDeadband(-controller.getLeftY(), 0.08) * (fast
+    // var fwdPercent = MathUtil.applyDeadband(-controller.getRightY(), 0.05) * (fast
     // ? 1 : .5);
-    // var strafePercent = MathUtil.applyDeadband(-controller.getLeftX(), 0.08) *
+    // var strafePercent = MathUtil.applyDeadband(-controller.getRightX(), 0.05) *
     // (fast ? 1 : .5);
-    // var rotPercent = MathUtil.applyDeadband(controller.getRightX(), 0.08) * (fast
+    // var rotPercent = MathUtil.applyDeadband(-controller.getLeftX(), 0.05) * (fast
     // ? .5 : .15);
 
     // if (controller.getLeftBumper()) {
     // strafePercent = 0;
     // }
     // driveSubsystem.drivePercent(fwdPercent, strafePercent,
-    // rotPercent,controller.getAButton(),0,0 );
+    //   rotPercent,!controller.getLeftBumper(),0,0 );
 
     // if (controller.getBackButton()) {
     // driveSubsystem.zeroYaw();
