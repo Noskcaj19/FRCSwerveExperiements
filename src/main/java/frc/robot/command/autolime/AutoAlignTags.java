@@ -1,5 +1,10 @@
 package frc.robot.command.autolime;
 
+import java.util.Optional;
+import java.util.stream.Stream;
+
+import org.photonvision.PhotonCamera;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.XboxController;
@@ -35,8 +40,18 @@ public class AutoAlignTags extends Command {
     //     // horizontal offset
     // }
 
-    final Pose3d getSpace() {
-        return (LimelightHelpers.getTargetPose3d_RobotSpace("limelight-back"));
+    final Optional<Pose3d> getSpace() {
+        LimelightHelpers.LimelightResults llresults = LimelightHelpers.getLatestResults("limelight-back");
+
+        var target = Stream.of(llresults.targets_Fiducials).filter(f->f.fiducialID == 7).findFirst();
+        // var target = Stream.of(LimelightHelpers.getRawFiducials("limelight-back"))
+        //     .filter(f -> f.id == 7)
+        //     .findFirst();
+        if (target.isPresent()) {
+            return Optional.of(target.get().getTargetPose_RobotSpace());
+        // return (LimelightHelpers.getTargetPose3d_RobotSpace("limelight-back"));
+        }
+        return Optional.empty();
         // return (x.getDouble(160)/160)-1;
         // whatever the distance is
         // returns the specific distance value we want so we can pid it???
@@ -67,10 +82,19 @@ public class AutoAlignTags extends Command {
     }
 
     public boolean aligned(){
-        if (!LimelightHelpers.getTV("limelight-back")) {
+        // if (!LimelightHelpers.getTV("limelight-back")) {
+        //     return false;
+        // }
+
+// var c = new PhotonCamera(null);
+// c.getLatestResult().targets[0]
+
+        var target_o = getSpace();
+        if (target_o.isEmpty()) {
             return false;
         }
-        if((getSpace().getZ()< 1.55 && getSpace().getZ() > 1.4) && (Math.abs(getSpace().getX()) < 0.2)){
+        var target = target_o.get();
+        if((target.getZ()< 1.55 && target.getZ() > 1.4) && (Math.abs(target.getX()) < 0.2)){
             return true;
         }
         else{
@@ -87,18 +111,25 @@ public class AutoAlignTags extends Command {
 
     @Override
     public void execute() {
-        if (LimelightHelpers.getTV("limelight-back")) {
-            var id = LimelightHelpers.getFiducialID("limelight-back");
+        
+
+        
+
+        // if (LimelightHelpers.getTV("limelight-back")) {
+        //     var id = LimelightHelpers.getFiducialID("limelight-back");
+        var target_o = getSpace();
+        if (target_o.isPresent()) {
+            var target = target_o.get();
             // if (!(id == 7 || id == 4)) { return; }
             // backTagID = LimelightHelpers.getFiducialID("limelight-back");
                         // double xOff = -xPID.calculate(getZontal());
-                        var rot = xPID.calculate(getSpace().getX());
+                        var rot = xPID.calculate(target.getX());
                         rot = MathUtil.clamp(rot, -DriveConstants.MaxVelocityMetersPerSecond/5, DriveConstants.MaxVelocityMetersPerSecond/5);
                         // var xOff = 0.0;
 
                         var df = NetworkTableInstance.getDefault();
-                        df.getEntry("/Shuffleboard/Tune/LimeZ").setDouble(getSpace().getZ());
-                        double yOff = distancePID.calculate(getSpace().getZ());
+                        df.getEntry("/Shuffleboard/Tune/LimeZ").setDouble(target.getZ());
+                        double yOff = distancePID.calculate(target.getZ());
                         yOff = MathUtil.clamp(yOff, -DriveConstants.MaxVelocityMetersPerSecond/3.5, DriveConstants.MaxVelocityMetersPerSecond/3.5);
                         df.getEntry("/Shuffleboard/Tune/DistancePID").setDouble(yOff);
                         // figure out how to use an array, which value of the array am i using??

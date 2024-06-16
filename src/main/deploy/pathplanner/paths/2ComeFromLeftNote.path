@@ -1,0 +1,52 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 3.0081095288772857,
+        "y": 7.075408544277004
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 2.376273938643605,
+        "y": 6.558344869524655
+      },
+      "isLocked": false,
+      "linkedName": "SLeftNote"
+    },
+    {
+      "anchor": {
+        "x": 1.4566482648590298,
+        "y": 5.957914298641097
+      },
+      "prevControl": {
+        "x": 2.139105957899416,
+        "y": 6.340125531813563
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "SmoothLeftEnd"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 180.0,
+    "maxAngularAcceleration": 150.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 19.218638085503617,
+    "rotateFast": false
+  },
+  "reversed": false,
+  "folder": "SmoothNote",
+  "previewStartingState": {
+    "rotation": 46.27,
+    "velocity": 0
+  },
+  "useDefaultConstraints": true
+}

@@ -1,27 +1,24 @@
 package frc.robot.subsytems;
 
-import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.MagnetSensorConfigs;
 import com.ctre.phoenix6.hardware.CANcoder;
-import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
-import com.revrobotics.CANSparkLowLevel;
-import com.revrobotics.SparkPIDController;
 import com.revrobotics.CANSparkBase.ControlType;
-
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.util.Units;
-
+import com.revrobotics.CANSparkLowLevel;
+import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.revrobotics.SparkPIDController;
+
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.Voltage;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import frc.robot.Constants;
 
@@ -48,8 +45,7 @@ public class SwerveModule {
         private final PIDController drivePIDController = new PIDController(.1, 0, 0);
 
         // i i i ffffffffffffffffffff
-        //SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(0.18359, 3.0413);
-        SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(0.00847, 0.27927, 0.09857);
+        SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(0.18359, 3.0413);
         // pid turning trapezoidal
 
         // private final PIDController turningPIDController = new PIDController(1.0 /
@@ -101,11 +97,8 @@ public class SwerveModule {
                 // absoluteEncoder.configAllSettings(config, 250);
                 // absoluteEncoder.setStatusFramePeriod(CANCoderStatusFrame.SensorData, 100,
                 // 250);
-                if (magnetOffset <= 0) {
-                        config.MagnetOffset = (-magnetOffset) - .5;
-                } else {
-                        config.MagnetOffset = (-magnetOffset) + .5;
-                }
+                config.MagnetOffset = magnetOffset;
+                // config.MagnetOffset = 0;
 
                 absoluteEncoder.getConfigurator().apply(config);
                 absoluteEncoder.getAbsolutePosition().setUpdateFrequency(100, 250);
@@ -115,7 +108,9 @@ public class SwerveModule {
                 // turningMotor.setInverted(turningMotorInverted);
 
                 turningMotor.setSmartCurrentLimit(20);
-                driveMotor.setSmartCurrentLimit(50);
+                turningMotor.setOpenLoopRampRate(0.05);
+                driveMotor.setSmartCurrentLimit(40);
+                // driveMotor.setOpenLoopRampRate(0.075);
 
                 driveMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus0, 100);
                 driveMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus1, 20);
@@ -221,6 +216,11 @@ public class SwerveModule {
 
         public void resetEncoders() {
                 driveEncoder.setPosition(0);
+        }
+
+        public void runVolts(Measure<Voltage> voltage) {
+                driveMotor.setVoltage(voltage.magnitude());
+                pidController.setReference(0, ControlType.kPosition);
         }
 }
 

@@ -1,0 +1,15 @@
+{
+  "NTProvider": {
+    "types": {
+      "/FMSInfo": "FMSInfo",
+      "/Shuffleboard/Drive/Field": "Field2d",
+      "/Shuffleboard/Drive/ResetClimb": "Command",
+      "/Shuffleboard/Tune/AutoTranslation": "PIDController",
+      "/Shuffleboard/auto/SendableChooser[0]": "String Chooser",
+      "/Shuffleboard/pid_debug/note_rotation_PID0": "ProfiledPIDController"
+    }
+  },
+  "NetworkTables Info": {
+    "visible": true
+  }
+}

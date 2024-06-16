@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.LimelightHelpers;
+import frc.robot.command.StopCommand;
 import frc.robot.command.autolime.AutoAlignTags;
 import frc.robot.command.autolime.AutoDrive;
 import frc.robot.command.autolime.AutoIntake;
@@ -21,19 +22,6 @@ import frc.robot.command.autolime.AutoShootSmart;
 import frc.robot.subsytems.Intake;
 import frc.robot.subsytems.Shooter;
 import frc.robot.subsytems.SwerveSubsystem;
-
-class StopCommand extends InstantCommand {
-    private SwerveSubsystem ds;
-
-    StopCommand(SwerveSubsystem ds) {
-        this.ds = ds;
-    }
-
-    @Override
-    public void execute() {
-        ds.drive(0, 0, 0, false);
-    }
-}
 
 public class CenterAuto extends SequentialCommandGroup {
 

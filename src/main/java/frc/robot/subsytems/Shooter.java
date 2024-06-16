@@ -20,7 +20,7 @@ import frc.robot.Constants;
 public class Shooter extends SubsystemBase {
 
     public Shooter() {
-        Shuffleboard.getTab("debug").addDouble("MotorSpeed", this::getSpeedOne);
+        Shuffleboard.getTab("Debug").addDouble("MotorSpeed", this::getSpeedOne);
         // shooterOne.configVoltageCompSaturation(12);
         // shooterTwo.configVoltageCompSaturation(12);
     }

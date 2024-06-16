@@ -20,7 +20,7 @@ public class AutoShootSmart extends SequentialCommandGroup{
 
         addCommands(
             new AutoShootEndless(shooterSub, intakeSub).until(intakeSub::doesntHaveNote), 
-            new WaitCommand(.1),
+            new WaitCommand(.2),
             new InstantCommand(()->{
                 intakeSub.feedOff();
                 shooterSub.turnOff();

@@ -32,14 +32,14 @@ public class ResetClimb extends Command{
     public void execute(){
         if(!leftFinished) {
             var leftStatus = leftArmFilter.calculate(climbSub.getLeftCurrent());
-            if(Math.abs(leftStatus) > 10){
+            if(Math.abs(leftStatus) > 8){
                 climbSub.leftOverride(0);
                 leftFinished = true;
             }
         }
         if(!rightFinished) {
             var rightStatus = rightArmFilter.calculate(climbSub.getRightCurrent());
-            if(Math.abs(rightStatus) > 10){
+            if(Math.abs(rightStatus) > 8){
                 climbSub.rightOverride(0);
                 rightFinished = true;
             }

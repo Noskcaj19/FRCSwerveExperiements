@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.712409896869483,
-        "y": 4.071869297243475
+        "x": 1.86,
+        "y": 4.07
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.8799465584734185,
-        "y": 4.86584738919256
+        "x": 2.0275366616039356,
+        "y": 4.863978091949086
       },
       "isLocked": false,
       "linkedName": null
@@ -160,7 +160,7 @@
     "rotateFast": false
   },
   "reversed": false,
-  "folder": null,
+  "folder": "Tuning",
   "previewStartingState": null,
   "useDefaultConstraints": false
 }

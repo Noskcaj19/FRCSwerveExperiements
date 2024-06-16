@@ -71,9 +71,6 @@ public class AutoAlignNotes extends Command{
         forwardPid.setIntegratorRange(-2, 2);
         horizontalPid.setIntegratorRange(-15, 15);
 
-        Shuffleboard.getTab("pid_debug").add("horizontalpid", horizontalPid);
-        Shuffleboard.getTab("pid_debug").add("forwardpid", forwardPid);
-
     }
 
 //    public boolean aligned(){

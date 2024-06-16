@@ -35,7 +35,7 @@ static int count = 0;
         rotationPid = new ProfiledPIDController(0.03, 0, 0,
         // horizontalPid = new ProfiledPIDController(kuh*.6, 0, tuh*.125,
         new TrapezoidProfile.Constraints(Constants.DriveConstants.MaxVelocityMetersPerSecond / 3, 3/1.5));
-        Shuffleboard.getTab("pid_debug").add("note_rotation_PID"+count, rotationPid);
+        // Shuffleboard.getTab("pid_debug").add("note_rotation_PID"+count, rotationPid);
         count+=1;
     }
     

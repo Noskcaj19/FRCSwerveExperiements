@@ -1,0 +1,98 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 1.4566482648590298,
+        "y": 5.957914298641097
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 2.041315762319025,
+        "y": 5.519222679070358
+      },
+      "isLocked": false,
+      "linkedName": "SmoothLeftEnd"
+    },
+    {
+      "anchor": {
+        "x": 1.8881911591948184,
+        "y": 4.556709582169164
+      },
+      "prevControl": {
+        "x": 1.8959517942797846,
+        "y": 4.75655895680686
+      },
+      "nextControl": {
+        "x": 1.8804305241098522,
+        "y": 4.356860207531469
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 2.884611829350241,
+        "y": 4.1135356817127136
+      },
+      "prevControl": {
+        "x": 2.1092560302011423,
+        "y": 4.081089617133085
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "RightNote"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [
+    {
+      "name": "Note Pickup",
+      "minWaypointRelativePos": 1.65,
+      "maxWaypointRelativePos": 2.0,
+      "constraints": {
+        "maxVelocity": 1.0,
+        "maxAcceleration": 1.0,
+        "maxAngularVelocity": 180.0,
+        "maxAngularAcceleration": 150.0
+      }
+    }
+  ],
+  "eventMarkers": [
+    {
+      "name": "New Event Marker",
+      "waypointRelativePos": 1.0,
+      "command": {
+        "type": "sequential",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "SmartIntake"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 180.0,
+    "maxAngularAcceleration": 150.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 0.0,
+    "rotateFast": false
+  },
+  "reversed": false,
+  "folder": "SmoothNote",
+  "previewStartingState": {
+    "rotation": 0,
+    "velocity": 0
+  },
+  "useDefaultConstraints": true
+}

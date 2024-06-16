@@ -22,6 +22,13 @@
       "name": "WPILib roboRIO Debug",
       "request": "launch",
       "desktop": false
-    }
+    },
+    {
+      "type": "java",
+      "name": "Debug Attach",
+      "request": "attach",
+      "hostName": "10.15.23.2",
+      "port": 8349,
+  }
   ]
 }

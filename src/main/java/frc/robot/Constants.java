@@ -41,14 +41,16 @@ public final class Constants {
     public static final double kDrivePeriod = TimedRobot.kDefaultPeriod;
 
     // Distance between left and right wheels
-    public static final double kTrackWidthMeters = 0.6223/2;
+    public static final double kTrackWidthMeters = 0.6223;
+    public static final double kTrackWidthMetersHalf = kTrackWidthMeters/2;
     // Distance between front and back wheels
-    public static final double kTrackBaseMeters = 0.40004999999999996/2;
+    public static final double kTrackBaseMeters = 0.40004999999999996;
+    public static final double kTrackBaseMetersHalf = kTrackBaseMeters/2;
 
-    private static final Translation2d kFrontLeftLocation = new Translation2d(kTrackBaseMeters, kTrackWidthMeters);
-    private static final Translation2d kFrontRightLocation = new Translation2d(kTrackBaseMeters, -kTrackWidthMeters);
-    private static final Translation2d kBackLeftLocation = new Translation2d(-kTrackBaseMeters, kTrackWidthMeters);
-    private static final Translation2d kBackRightLocation = new Translation2d(-kTrackBaseMeters, -kTrackWidthMeters);
+    private static final Translation2d kFrontLeftLocation = new Translation2d(kTrackBaseMetersHalf, kTrackWidthMetersHalf);
+    private static final Translation2d kFrontRightLocation = new Translation2d(kTrackBaseMetersHalf, -kTrackWidthMetersHalf);
+    private static final Translation2d kBackLeftLocation = new Translation2d(-kTrackBaseMetersHalf, kTrackWidthMetersHalf);
+    private static final Translation2d kBackRightLocation = new Translation2d(-kTrackBaseMetersHalf, -kTrackWidthMetersHalf);
 
     public static final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(
         kFrontLeftLocation, kFrontRightLocation, kBackLeftLocation, kBackRightLocation);
@@ -69,7 +71,7 @@ public final class Constants {
      * line.
      */
     public static final double kNeoFreeSpinRpm = 5676;
-    public static final double MaxVelocityMetersPerSecond = (kNeoFreeSpinRpm / 60.0) *
+    public static final double MaxVelocityMetersPerSecond = (kNeoFreeSpinRpm / 61.0) *
         ModuleType.getDriveReduction() *
         ModuleType.getWheelDiameter() * Math.PI;
 

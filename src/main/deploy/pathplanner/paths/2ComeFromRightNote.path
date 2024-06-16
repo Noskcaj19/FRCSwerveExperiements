@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 0.7550794938988249,
-        "y": 6.700921629485535
+        "x": 2.884611829350241,
+        "y": 4.1135356817127136
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.789584327136133,
-        "y": 6.747641202599477
+        "x": 2.547893079350241,
+        "y": 4.30924855001345
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "RightNote"
     },
     {
       "anchor": {
-        "x": 2.0098337432468134,
-        "y": 7.007935967091267
+        "x": 1.4240151527178055,
+        "y": 4.7551822056769115
       },
       "prevControl": {
-        "x": 1.0098337432468134,
-        "y": 7.007935967091267
+        "x": 1.612883382016764,
+        "y": 4.58999753937008
       },
       "nextControl": null,
       "isLocked": false,
@@ -34,19 +34,19 @@
   "globalConstraints": {
     "maxVelocity": 3.0,
     "maxAcceleration": 3.0,
-    "maxAngularVelocity": 540.0,
-    "maxAngularAcceleration": 720.0
+    "maxAngularVelocity": 180.0,
+    "maxAngularAcceleration": 150.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0,
+    "rotation": -22.64058693540555,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": null,
+  "folder": "SmoothNote",
   "previewStartingState": {
-    "rotation": -119.19748604606453,
-    "velocity": 0
+    "rotation": 0.0,
+    "velocity": 0.0
   },
   "useDefaultConstraints": true
 }
