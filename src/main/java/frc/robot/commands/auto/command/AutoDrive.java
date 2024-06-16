@@ -34,6 +34,7 @@ public class AutoDrive extends Command {
     @Override
     public boolean isFinished() {
         var dist = ds.getPose().getTranslation().getDistance(startingPosition);
+        System.err.println(dist);
 
         return (dist > targetDist);
     

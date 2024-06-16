@@ -25,6 +25,7 @@ import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj.DataLogManager;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Joystick;
@@ -38,9 +39,11 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.DriveConstants;
+import frc.robot.commands.auto.command.AutoDrive;
 import frc.robot.commands.auto.command.AutoFaceApril;
 import frc.robot.commands.auto.command.AutoGoto;
 import frc.robot.commands.auto.command.AutoStrafeNote;
@@ -63,7 +66,7 @@ public class Robot extends TimedRobot {
   // private Joystick stick2 = new Joystick(1);
   private DriveSubsystem driveSubsystem = new DriveSubsystem();
   private Intake intakeSubsystem = new Intake();
-  private SendableChooser<Command> chooser = new SendableChooser<>();
+  // private SendableChooser<Command> chooser = new SendableChooser<>();
 
   @Override
   public void robotPeriodic() {
@@ -80,47 +83,57 @@ public class Robot extends TimedRobot {
     DataLogManager.start();
     URCL.start();
 
-    var sysIdRoutine = new SysIdRoutine(
-        new SysIdRoutine.Config(),
-        new SysIdRoutine.Mechanism(
-            (voltage) -> driveSubsystem.runVolts(voltage),
-            null, // No log consumer, since data is recorded by URCL
-            driveSubsystem));
+    // var sysIdRoutine = new SysIdRoutine(
+    //     new SysIdRoutine.Config(),
+    //     new SysIdRoutine.Mechanism(
+    //         (voltage) -> driveSubsystem.runVolts(voltage),
+    //         null, // No log consumer, since data is recorded by URCL
+    //         driveSubsystem));
 
-    chooser.addOption("Quasi Forward",
-        sysIdRoutine.quasistatic(SysIdRoutine.Direction.kForward));
-    chooser.addOption("Quasi Backward",
-        sysIdRoutine.quasistatic(SysIdRoutine.Direction.kReverse));
-    chooser.addOption("Dynamic Forward",
-        sysIdRoutine.dynamic(SysIdRoutine.Direction.kForward));
-    chooser.addOption("Dynamic Backward",
-        sysIdRoutine.dynamic(SysIdRoutine.Direction.kReverse));
-    Shuffleboard.getTab("Tune").add("SysID Drivetrain", chooser);
+    // chooser.addOption("Quasi Forward",
+    //     sysIdRoutine.quasistatic(SysIdRoutine.Direction.kForward));
+    // chooser.addOption("Quasi Backward",
+    //     sysIdRoutine.quasistatic(SysIdRoutine.Direction.kReverse));
+    // chooser.addOption("Dynamic Forward",
+    //     sysIdRoutine.dynamic(SysIdRoutine.Direction.kForward));
+    // chooser.addOption("Dynamic Backward",
+    //     sysIdRoutine.dynamic(SysIdRoutine.Direction.kReverse));
+    // Shuffleboard.getTab("Tune").add("SysID Drivetrain", chooser);
 
     // CameraServer.startAutomaticCapture();
     // CameraServer.startAutomaticCapture();
 
-    new JoystickButton(stick, 11).whileTrue(new AutoStrafeNote(driveSubsystem));
+    // new JoystickButton(stick, 11).whileTrue(new AutoStrafeNote(driveSubsystem));
     // new JoystickButton(stick, 10).whileTrue(new AutoFaceApril3d(driveSubsystem));
-    new JoystickButton(stick, 9).whileTrue(new AutoGoto(driveSubsystem, new Translation2d(1, 0)));
+    new JoystickButton(stick, 9).whileTrue(new AutoGoto(driveSubsystem, new Translation2d(1, 0))
+        .andThen(new WaitCommand(.1))
+        .andThen(new AutoGoto(driveSubsystem, new Translation2d(0, 1))
+        .andThen(new WaitCommand(.1))
+            .andThen(new AutoGoto(driveSubsystem, new Translation2d(-1, 0)))));
     new JoystickButton(stick, 7)
         .whileTrue(new InstantCommand(() -> driveSubsystem.resetOdometry(new Pose2d()), driveSubsystem));
 
     new JoystickButton(stick, 4)
-    // new JoystickButton(controller, 6)
+        // new JoystickButton(controller, 6)
         .whileTrue(
             new RunCommand(() -> intakeSubsystem.intake(), intakeSubsystem)
                 .finallyDo(() -> intakeSubsystem.intakeOff()));
 
     new JoystickButton(stick, 2)
-    // new JoystickButton(controller, 6)
+        // new JoystickButton(controller, 6)
         .whileTrue(
             new RunCommand(() -> intakeSubsystem.shootOn(), intakeSubsystem)
                 .finallyDo(() -> intakeSubsystem.shootOff()));
 
+    new JoystickButton(stick, 11)
+        // new JoystickButton(controller, 6)
+        .whileTrue(
+            new RunCommand(() -> intakeSubsystem.feedOn(), intakeSubsystem));
+
     // var driveJoystick = new RunCommand(() -> {
     // var fast = controller.getRightBumper();
-    // var fwdPercent = MathUtil.applyDeadband(-controller.getRightY(), 0.05) * (fast
+    // var fwdPercent = MathUtil.applyDeadband(-controller.getRightY(), 0.05) *
+    // (fast
     // ? 1 : .5);
     // var strafePercent = MathUtil.applyDeadband(-controller.getRightX(), 0.05) *
     // (fast ? 1 : .5);
@@ -131,7 +144,7 @@ public class Robot extends TimedRobot {
     // strafePercent = 0;
     // }
     // driveSubsystem.drivePercent(fwdPercent, strafePercent,
-    //   rotPercent,!controller.getLeftBumper(),0,0 );
+    // rotPercent,!controller.getLeftBumper(),0,0 );
 
     // if (controller.getBackButton()) {
     // driveSubsystem.zeroYaw();
@@ -202,6 +215,10 @@ public class Robot extends TimedRobot {
   }
 
   @Override
+  public void disabledPeriodic() {
+  }
+
+  @Override
   public void autonomousExit() {
   }
 
@@ -218,7 +235,8 @@ public class Robot extends TimedRobot {
   }
 
   public Command getAutonomousCommand() {
-    return new InstantCommand();
+    // return new InstantCommand();
+    return new AutoDrive(driveSubsystem, .1, 4);
     // return chooser.getSelected();
   }
 

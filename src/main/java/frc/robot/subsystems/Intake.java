@@ -11,7 +11,11 @@ import com.ctre.phoenix.sensors.SensorVelocityMeasPeriod;
 
 import au.grapplerobotics.LaserCan;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.filter.LinearFilter;
+import edu.wpi.first.math.filter.MedianFilter;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.ShuffleHelper.Souffle;
 
@@ -54,12 +58,6 @@ public class Intake extends SubsystemBase {
         rightShoot.configVoltageCompSaturation(12);
         rightShoot.enableVoltageCompensation(true);
 
-        // leftShoot.config_kP(0, 17728);
-        // leftShoot.config_kI(0, 0);
-        // leftShoot.config_kD(0, 0);
-        // leftShoot.config_kF(0, 0);
-
-
         var conf = new TalonSRXConfiguration();
         conf.velocityMeasurementPeriod = SensorVelocityMeasPeriod.Period_1Ms;
         conf.velocityMeasurementWindow = 1;
@@ -69,10 +67,13 @@ public class Intake extends SubsystemBase {
         // --Very Important--
         rightShoot.setNeutralMode(NeutralMode.Coast);
         leftShoot.setNeutralMode(NeutralMode.Coast);
+    
+        Shuffleboard.getTab("Tune").add("Note holder", noteHolder);
+        noteHolder.setSetpoint(207);
     }
 
     private boolean tryIntake = false;
-    private boolean shooting;
+    private boolean shooting = false;
 
     public void intake() {
         tryIntake = true;
@@ -80,8 +81,11 @@ public class Intake extends SubsystemBase {
 
     public void shootOn() {
         // leftShoot.set(ControlMode.PercentOutput, .5);
-        leftShoot.set(TalonSRXControlMode.PercentOutput, ff.calculate(500)/12);
+        leftShoot.set(TalonSRXControlMode.PercentOutput, ff.calculate(2000)/12);
         shooting = true;
+    }
+
+    public void feedOn() {
         feeder.set(ControlMode.PercentOutput, .5);
     }
 
@@ -96,37 +100,65 @@ public class Intake extends SubsystemBase {
         shooting = false;
     }
 
+    // double ku = 0.006;
+    // double tu = .7;
+    // private PIDController noteHolder = new PIDController(
+    //   .20*ku,
+    //   0.5*tu,
+    //   0.33*tu
+    // );
+
+    private PIDController noteHolder = new PIDController(
+        0.004,
+        0,
+        0
+    );
+
+    MedianFilter laserFilter = new MedianFilter(5);
+
     @Override
     public void periodic() {
-        System.out.println(rightShoot.getSelectedSensorVelocity());
-        if (tryIntake) {
-            LaserCan.Measurement measurement = laser.getMeasurement();
-            if (measurement != null && measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT) {
-                Souffle.set("Debug", "DistanceMM", measurement.distance_mm);
-                if (measurement.distance_mm > 250) {
-                    intake1.set(ControlMode.PercentOutput, .6);
-                    intake2.set(ControlMode.PercentOutput, .7);
-                    feeder.set(ControlMode.PercentOutput, 0.1);
-                    return;
-                }
-                if (measurement.distance_mm > 200) {
-                    intake1.set(ControlMode.PercentOutput, .3);
-                    intake2.set(ControlMode.PercentOutput, .5);
-                    feeder.set(ControlMode.PercentOutput, .1);
-                    return;
-                }
-                if (measurement.distance_mm > 160) {
-                    intake1.set(ControlMode.PercentOutput, 0);
-                    intake2.set(ControlMode.PercentOutput, .45);
-                    feeder.set(ControlMode.PercentOutput, .1);
-                    return;
-                }
-            }
+        LaserCan.Measurement measurement = laser.getMeasurement();
+        if (measurement != null && measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT) {
+            Souffle.set("Debug", "DistanceMM", measurement.distance_mm);
+        } else {
+            Souffle.set("Debug", "DistanceMM", 0);
         }
+        Souffle.set("Drive", "Has Note",measurement != null && measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT);
+
+        Souffle.set("Debug", "Intaking", tryIntake);
+        if (tryIntake) {
+            intake1.set(ControlMode.PercentOutput, .6);
+            intake2.set(ControlMode.PercentOutput, .85);
+            if (measurement != null && measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT) {
+                if (measurement.distance_mm < 300) {
+                    intake1.set(ControlMode.PercentOutput, 0);
+                    intake2.set(ControlMode.PercentOutput, 0.5);
+                }
+                if (measurement.distance_mm < 250) {
+                    intake1.set(ControlMode.PercentOutput, 0);
+                    intake2.set(ControlMode.PercentOutput, 0.25);
+                }
+                if (measurement.distance_mm < 250) {
+                    intake1.set(ControlMode.PercentOutput, 0);
+                    intake2.set(ControlMode.PercentOutput, 0);
+                }
+                leftShoot.set(TalonSRXControlMode.PercentOutput, -.075);
+                
+                var out = -laserFilter.calculate(noteHolder.calculate(measurement.distance_mm));
+                Souffle.set("Debug", "Note hold power", out);
+
+                feeder.set(ControlMode.PercentOutput, MathUtil.clamp(out, -.5, .75));
+                return;
+            }
+            return;
+        }
+        noteHolder.calculate(207);
         intake1.set(ControlMode.PercentOutput, 0);
         intake2.set(ControlMode.PercentOutput, 0);
         if (!shooting) {
             feeder.set(ControlMode.PercentOutput, 0);
+            leftShoot.set(TalonSRXControlMode.PercentOutput, 0);
         }
     }
 }

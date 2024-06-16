@@ -162,18 +162,18 @@ public class SwerveModule {
     // m_turningMotor.get());
     // Shuffleboard.getTab("Debug").addDouble("Drive Output Raw", () ->
     // m_driveMotor.get());
-    Shuffleboard.getTab("Debug")
-        .addDouble(""+turningEncoderId+"mag",
-            () -> m_absoluteEncoder.getAbsolutePosition().getValueAsDouble());
-    Shuffleboard.getTab("Debug")
-        .addDouble(""+turningEncoderId+"mag rotation",
-            () -> getAbsRad());
+    // Shuffleboard.getTab("Debug")
+    //     .addDouble(""+turningEncoderId+"mag",
+    //         () -> m_absoluteEncoder.getAbsolutePosition().getValueAsDouble());
+    // Shuffleboard.getTab("Debug")
+    //     .addDouble(""+turningEncoderId+"mag rotation",
+    //         () -> getAbsRad());
     // Shuffleboard.getTab("Debug")
     //     .addDouble(""+turningEncoderId+"mag Raw rotation",
     //         () -> getAbsRadRaw());
-    Shuffleboard.getTab("Debug")
-        .addDouble(""+turningEncoderId+"integrated ",
-            () -> m_integratedTurningEncoder.getPosition());
+    // Shuffleboard.getTab("Debug")
+    //     .addDouble(""+turningEncoderId+"integrated ",
+    //         () -> m_integratedTurningEncoder.getPosition());
     // Shuffleboard.getTab("Debug").addDouble("Integrated encoder", () ->
     // m_integratedTurningEncoder.getPosition());
   }

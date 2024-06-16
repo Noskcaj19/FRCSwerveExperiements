@@ -10,12 +10,6 @@ import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.ReplanningConfig;
 
-import au.grapplerobotics.ConfigurationFailedException;
-import au.grapplerobotics.LaserCan;
-import au.grapplerobotics.LaserCan.RangingMode;
-import au.grapplerobotics.LaserCan.RegionOfInterest;
-import au.grapplerobotics.LaserCan.TimingBudget;
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -29,6 +23,8 @@ import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Voltage;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.SPI;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
@@ -74,6 +70,8 @@ public class DriveSubsystem extends SubsystemBase {
 
     private final AHRS gyro = new AHRS(SPI.Port.kMXP);
 
+    private final Field2d m_field = new Field2d();
+
     // Odometry class for tracking robot pose
     SwerveDriveOdometry odometry = new SwerveDriveOdometry(
             Constants.DriveConstants.kinematics,
@@ -83,12 +81,14 @@ public class DriveSubsystem extends SubsystemBase {
                     frontRight.getPosition(),
                     backLeft.getPosition(),
                     backRight.getPosition()
-            });
+                    }
+                    );
 
     // private LaserCan lc = new LaserCan(29);
 
     /** Creates a new DriveSubsystem. */
     public DriveSubsystem() {
+        Shuffleboard.getTab("Drive").add(m_field);
         // try {
         //     lc.setRangingMode(RangingMode.SHORT);
         //     lc.setTimingBudget(TimingBudget.TIMING_BUDGET_50MS);
@@ -96,6 +96,7 @@ public class DriveSubsystem extends SubsystemBase {
         // } catch (ConfigurationFailedException e) {
         //     e.printStackTrace();
         // }
+
         AutoBuilder.configureHolonomic(
                 this::getPose, // Robot pose supplier
                 this::resetOdometry, // Method to reset odometry (will be called if your auto has a starting pose)
@@ -133,6 +134,32 @@ public class DriveSubsystem extends SubsystemBase {
     public void periodic() {
         // System.out.printf("r: %.2f p: %.2f y: %.2f\n", gyro.getRoll(), gyro.getPitch(), gyro.getYaw());
         // Update the odometry in the periodic block
+
+        // boolean doRejectUpdate = false;
+        // LimelightHelpers.PoseEstimate mt1 = LimelightHelpers.getBotPoseEstimate_wpiBlue("back");
+
+        // if (mt1.tagCount == 1 && mt1.rawFiducials.length == 1) {
+        //         if (mt1.rawFiducials[0].ambiguity > .7) {
+        //                 doRejectUpdate = true;
+        //         }
+        //         if (mt1.rawFiducials[0].distToCamera > 3) {
+        //                 doRejectUpdate = true;
+        //         }
+        // }
+        // if (mt1.tagCount == 0) {
+        //         doRejectUpdate = true;
+        // }
+
+        // if (!doRejectUpdate) {
+        //         odometry.setVisionMeasurementStdDevs(VecBuilder.fill(.5, .5, 9999999));
+        //         odometry.addVisionMeasurement(
+        //                         mt1.pose,
+        //                         mt1.timestampSeconds);
+        // }
+        // LimelightHelpers.SetRobotOrientation("limelight",
+        // odometry.getEstimatedPosition().getRotation().getDegrees(), 0, 0, 0, 0, 0);
+        // LimelightHelpers.PoseEstimate mt2 =
+        // LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight");
         odometry.update(
                 gyro.getRotation2d(),
                 new SwerveModulePosition[] {
@@ -141,6 +168,7 @@ public class DriveSubsystem extends SubsystemBase {
                         backLeft.getPosition(),
                         backRight.getPosition()
                 });
+        m_field.setRobotPose(getPose());
     }
 
     /**
@@ -149,7 +177,7 @@ public class DriveSubsystem extends SubsystemBase {
      * @return The pose.
      */
     public Pose2d getPose() {
-        return odometry.getPoseMeters();
+            return odometry.getPoseMeters();
     }
 
     public ChassisSpeeds getSpeeds() {
