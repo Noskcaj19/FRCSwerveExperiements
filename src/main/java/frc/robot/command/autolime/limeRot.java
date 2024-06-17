@@ -1,16 +1,16 @@
 package frc.robot.command.autolime;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.LimelightHelpers;
 import frc.robot.subsytems.SwerveSubsystem;
-import edu.wpi.first.math.MathUtil;
 
 public class limeRot extends Command {
 
+    private final PIDController turnPID;
     private SwerveSubsystem swerveSub;
     private LimelightHelpers limelightHelpers;
-    private final PIDController turnPID;
 
     public limeRot(SwerveSubsystem swerveSub, LimelightHelpers limelightHelpers) {
         addRequirements(swerveSub);

@@ -1,16 +1,7 @@
 package frc.robot.subsytems;
 
-import javax.swing.plaf.nimbus.State;
-
 import com.ctre.phoenix.motorcontrol.TalonSRXControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
-import com.ctre.phoenix6.hardware.CANcoder;
-import com.revrobotics.AbsoluteEncoder;
-import com.revrobotics.CANSparkMax;
-import com.ctre.phoenix6.BaseStatusSignal;
-
-import com.revrobotics.CANSparkLowLevel.MotorType;
-
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -19,12 +10,11 @@ import frc.robot.Constants;
 
 public class Shooter extends SubsystemBase {
 
-    public Shooter() {
-        Shuffleboard.getTab("Debug").addDouble("MotorSpeed", this::getSpeedOne);
-        // shooterOne.configVoltageCompSaturation(12);
-        // shooterTwo.configVoltageCompSaturation(12);
-    }
-
+    ProfiledPIDController deflectorPID = new ProfiledPIDController(
+            1.1,
+            0,
+            0,
+            new TrapezoidProfile.Constraints(Constants.DriveConstants.MaxVelocityMetersPerSecond / 3, 2));
     // motor
     // to be quite honest i dunnoi what goe s to which motor controller
     private TalonSRX shooterOne = new TalonSRX(10);
@@ -35,14 +25,14 @@ public class Shooter extends SubsystemBase {
     // shooterOne.setUpdateFrequency(200);
     // set the update frequency
 
-    ProfiledPIDController deflectorPID = new ProfiledPIDController(
-            1.1,
-            0,
-            0,
-            new TrapezoidProfile.Constraints(Constants.DriveConstants.MaxVelocityMetersPerSecond / 3, 2));
+    public Shooter() {
+        Shuffleboard.getTab("Debug").addDouble("MotorSpeed", this::getSpeedOne);
+        // shooterOne.configVoltageCompSaturation(12);
+        // shooterTwo.configVoltageCompSaturation(12);
+    }
 
     // moter
-    public void makeItGoBackwards(){
+    public void makeItGoBackwards() {
         shooterOne.set(TalonSRXControlMode.PercentOutput, 0.27);
         shooterTwo.set(TalonSRXControlMode.PercentOutput, -0.27);
     }
@@ -79,7 +69,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public void reverseShooters() {
-        shooterOne.set (TalonSRXControlMode.PercentOutput, .5);
+        shooterOne.set(TalonSRXControlMode.PercentOutput, .5);
         shooterTwo.set(TalonSRXControlMode.PercentOutput, -0.5);
     }
 

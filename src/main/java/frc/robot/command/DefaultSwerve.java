@@ -1,28 +1,24 @@
 package frc.robot.command;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsytems.*;
+import frc.robot.subsytems.SwerveSubsystem;
 
 public class DefaultSwerve extends Command {
 
-    public double signedPow(double v, double p) {
-        return Math.copySign(Math.pow(v, p), v);
-    }
-
+    Boolean slow = false;
     private Joystick joy;
     private SwerveSubsystem swerveSub;
-    Boolean slow = false;
-
     public DefaultSwerve(Joystick joy, SwerveSubsystem swerveSub) {
 
         addRequirements(swerveSub);
         this.swerveSub = swerveSub;
         this.joy = joy;
+    }
+
+    public double signedPow(double v, double p) {
+        return Math.copySign(Math.pow(v, p), v);
     }
 
     @Override
@@ -38,7 +34,7 @@ public class DefaultSwerve extends Command {
 
         // adding deadbands
 
-        
+
         var xSpeed = signedPow(MathUtil.applyDeadband(-joy.getY(), 0.1), 2);
         var ySpeed = signedPow(MathUtil.applyDeadband(-joy.getX(), 0.1), 2);
         var rot = signedPow(MathUtil.applyDeadband(-joy.getTwist(), 0.1), 3);

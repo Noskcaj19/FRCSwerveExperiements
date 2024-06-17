@@ -2,19 +2,17 @@ package frc.robot.command.autolime;
 
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsytems.SwerveSubsystem;
-import frc.robot.subsytems.SwerveModule;
 
 public class AutoDrive extends Command {
 
+    SlewRateLimiter slew = new SlewRateLimiter(0.2);
     private SwerveSubsystem swerveSub;
     private double goalDistance;
     private double speed;
     private Translation2d startPosition;
-    SlewRateLimiter slew = new SlewRateLimiter(0.2);
 
     public AutoDrive(SwerveSubsystem swerveSub, double goalDistance, double speed) {
 
@@ -37,7 +35,7 @@ public class AutoDrive extends Command {
         // drive forqard
 
         NetworkTableInstance.getDefault().getEntry("/Shuffleboard/Tune/Commanded Speed").setDouble(speed);
-        var ss=slew.calculate(speed);
+        var ss = slew.calculate(speed);
         NetworkTableInstance.getDefault().getEntry("/Shuffleboard/Tune/Limited Speed").setDouble(ss);
         swerveSub.drive(ss, 0, 0, false);
         // hird

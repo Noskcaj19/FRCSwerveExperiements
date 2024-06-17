@@ -10,8 +10,8 @@ import frc.robot.subsytems.Intake;
 import frc.robot.subsytems.Shooter;
 import frc.robot.subsytems.SwerveSubsystem;
 
-public class IntakeAutoSequence extends SequentialCommandGroup{
-    
+public class IntakeAutoSequence extends SequentialCommandGroup {
+
     SwerveSubsystem swerveSub;
     Shooter shooterSub;
     Intake intakeSub;
@@ -32,11 +32,11 @@ public class IntakeAutoSequence extends SequentialCommandGroup{
                 // new AutoAlignTags(swerveSub, 1)
                 // new AutoIntake(in)
                 Commands.race(
-                    new AutoAlignNotes(swerveSub).withTimeout(5),
-                    Commands.race(
-                        new AutoIntake(intakeSub),
-                        new WaitUntilCommand(intakeSub::hasNote).andThen(new WaitCommand(.3))
-                    )
+                        new AutoAlignNotes(swerveSub).withTimeout(5),
+                        Commands.race(
+                                new AutoIntake(intakeSub),
+                                new WaitUntilCommand(intakeSub::hasNote).andThen(new WaitCommand(.3))
+                        )
                 )
         );
     }

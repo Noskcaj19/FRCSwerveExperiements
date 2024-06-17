@@ -1,10 +1,10 @@
 package frc.robot.subsytems;
 
+import au.grapplerobotics.LaserCan;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.TalonSRXControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
-import au.grapplerobotics.LaserCan;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.MedianFilter;
@@ -17,11 +17,14 @@ public class Intake extends SubsystemBase {
     VictorSPX intakeTwo = new VictorSPX(9);
     TalonSRX transport = new TalonSRX(12);
     // private PIDController intakeP
-
+    MedianFilter laserFilter = new MedianFilter(5);
     // laser
     private LaserCan laser = new LaserCan(44);
-
     private Shooter shooterSub;
+    // boolena
+    private boolean isTaking = false;
+    private boolean isFeeding = false;
+    private PIDController notePID = new PIDController(.004, 0, 0);
 
     // motors that first grab the note under the bumber
     // kind of like beatle jaws
@@ -32,9 +35,6 @@ public class Intake extends SubsystemBase {
 
         intakeTwo.setInverted(true);
     }
-
-    // boolena
-    private boolean isTaking = false;
 
     public boolean get() {
         return isTaking;
@@ -47,8 +47,6 @@ public class Intake extends SubsystemBase {
     public void stopSmIntake() {
         isTaking = false;
     }
-
-    private boolean isFeeding = false;
 
     public boolean getFeeding() {
         return isFeeding;
@@ -109,9 +107,6 @@ public class Intake extends SubsystemBase {
     public boolean doesntHaveNote() {
         return !hasNote();
     }
-
-    private PIDController notePID = new PIDController(.004, 0, 0);
-    MedianFilter laserFilter = new MedianFilter(5);
 
     @Override
     public void periodic() {

@@ -4,7 +4,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsytems.Intake;
 import frc.robot.subsytems.Shooter;
 
-public class AutoShootEndless extends Command{
+public class AutoShootEndless extends Command {
 
     private Shooter shootSub;
     private Intake intakeSub;
@@ -27,5 +27,5 @@ public class AutoShootEndless extends Command{
             intakeSub.feedOff();
         }
     }
-    
+
 }

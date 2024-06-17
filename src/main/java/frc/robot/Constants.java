@@ -24,86 +24,86 @@ import frc.robot.sds.SdsModuleConfigurations;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-  public static final class AutoConstants {
-    public static double kPYController = 3;
-    public static double kPXController = 3;
-    public static double kPThetaController = 1;
-    public static double kMaxSpeedMetersPerSecond = DriveConstants.MaxVelocityMetersPerSecond * .50;
-    public static double kMaxAccelerationMetersPerSecondSquared = 4;
-    public static Constraints kThetaControllerConstraints = new Constraints(
-        DriveConstants.MaxAngularVelocityRadiansPerSecond * .5, (Math.PI * 2) / 2);
+    public static final ModuleConfiguration ModuleType = SdsModuleConfigurations.MK4I_L1;
 
-  }
+    public static final class AutoConstants {
+        public static double kPYController = 3;
+        public static double kPXController = 3;
+        public static double kPThetaController = 1;
+        public static double kMaxSpeedMetersPerSecond = DriveConstants.MaxVelocityMetersPerSecond * .50;
+        public static double kMaxAccelerationMetersPerSecondSquared = 4;
+        public static Constraints kThetaControllerConstraints = new Constraints(
+                DriveConstants.MaxAngularVelocityRadiansPerSecond * .5, (Math.PI * 2) / 2);
 
-  public static final ModuleConfiguration ModuleType = SdsModuleConfigurations.MK4I_L1;
+    }
 
-  public static final class DriveConstants {
-    public static final double kDrivePeriod = TimedRobot.kDefaultPeriod;
+    public static final class DriveConstants {
+        public static final double kDrivePeriod = TimedRobot.kDefaultPeriod;
 
-    // Distance between left and right wheels
-    public static final double kTrackWidthMeters = 0.6223;
-    public static final double kTrackWidthMetersHalf = kTrackWidthMeters/2;
-    // Distance between front and back wheels
-    public static final double kTrackBaseMeters = 0.40004999999999996;
-    public static final double kTrackBaseMetersHalf = kTrackBaseMeters/2;
+        // Distance between left and right wheels
+        public static final double kTrackWidthMeters = 0.6223;
+        public static final double kTrackWidthMetersHalf = kTrackWidthMeters / 2;
+        // Distance between front and back wheels
+        public static final double kTrackBaseMeters = 0.40004999999999996;
+        public static final double kTrackBaseMetersHalf = kTrackBaseMeters / 2;
 
-    private static final Translation2d kFrontLeftLocation = new Translation2d(kTrackBaseMetersHalf, kTrackWidthMetersHalf);
-    private static final Translation2d kFrontRightLocation = new Translation2d(kTrackBaseMetersHalf, -kTrackWidthMetersHalf);
-    private static final Translation2d kBackLeftLocation = new Translation2d(-kTrackBaseMetersHalf, kTrackWidthMetersHalf);
-    private static final Translation2d kBackRightLocation = new Translation2d(-kTrackBaseMetersHalf, -kTrackWidthMetersHalf);
+        private static final Translation2d kFrontLeftLocation = new Translation2d(kTrackBaseMetersHalf, kTrackWidthMetersHalf);
+        private static final Translation2d kFrontRightLocation = new Translation2d(kTrackBaseMetersHalf, -kTrackWidthMetersHalf);
+        private static final Translation2d kBackLeftLocation = new Translation2d(-kTrackBaseMetersHalf, kTrackWidthMetersHalf);
+        private static final Translation2d kBackRightLocation = new Translation2d(-kTrackBaseMetersHalf, -kTrackWidthMetersHalf);
 
-    public static final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(
-        kFrontLeftLocation, kFrontRightLocation, kBackLeftLocation, kBackRightLocation);
+        public static final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(
+                kFrontLeftLocation, kFrontRightLocation, kBackLeftLocation, kBackRightLocation);
 
-    // FIXME Measure the drivetrain's maximum velocity or calculate the theoretical.
-    // The formula for calculating the theoretical maximum velocity is:
-    // <Motor free speed RPM> / 60 * <Drive reduction> * <Wheel diameter meters> *
-    // pi
-    // By default this value is setup for a Mk3 standard module using Falcon500s to
-    // drive.
-    // An example of this constant for a Mk4 L2 module with NEOs to drive is:
-    // 5880.0 / 60.0 / SdsModuleConfigurations.MK4_L2.getDriveReduction() *
-    // SdsModuleConfigurations.MK4_L2.getWheelDiameter() * Math.PI
-    /**
-     * The maximum velocity of the robot in meters per second.
-     * <p>
-     * This is a measure of how fast the robot should be able to drive in a straight
-     * line.
-     */
-    public static final double kNeoFreeSpinRpm = 5676;
-    public static final double MaxVelocityMetersPerSecond = (kNeoFreeSpinRpm / 61.0) *
-        ModuleType.getDriveReduction() *
-        ModuleType.getWheelDiameter() * Math.PI;
+        // FIXME Measure the drivetrain's maximum velocity or calculate the theoretical.
+        // The formula for calculating the theoretical maximum velocity is:
+        // <Motor free speed RPM> / 60 * <Drive reduction> * <Wheel diameter meters> *
+        // pi
+        // By default this value is setup for a Mk3 standard module using Falcon500s to
+        // drive.
+        // An example of this constant for a Mk4 L2 module with NEOs to drive is:
+        // 5880.0 / 60.0 / SdsModuleConfigurations.MK4_L2.getDriveReduction() *
+        // SdsModuleConfigurations.MK4_L2.getWheelDiameter() * Math.PI
+        /**
+         * The maximum velocity of the robot in meters per second.
+         * <p>
+         * This is a measure of how fast the robot should be able to drive in a straight
+         * line.
+         */
+        public static final double kNeoFreeSpinRpm = 5676;
+        public static final double MaxVelocityMetersPerSecond = (kNeoFreeSpinRpm / 61.0) *
+                ModuleType.getDriveReduction() *
+                ModuleType.getWheelDiameter() * Math.PI;
 
-    public static final double MaxAngularVelocityRadiansPerSecond = MaxVelocityMetersPerSecond
-        / Math.hypot(kTrackWidthMeters / 2, kTrackBaseMeters / 2) ;
+        public static final double MaxAngularVelocityRadiansPerSecond = MaxVelocityMetersPerSecond
+                / Math.hypot(kTrackWidthMeters / 2, kTrackBaseMeters / 2);
 
-  }
+    }
 
-  public static final class ModuleConstants {
+    public static final class ModuleConstants {
 
-    public static final double MaxModuleAngularSpeedRadiansPerSecond = 2 *
-        Math.PI;
-    public static final double MaxModuleAngularAccelerationRadiansPerSecondSquared = 2 * Math.PI;
+        public static final double MaxModuleAngularSpeedRadiansPerSecond = 2 *
+                Math.PI;
+        public static final double MaxModuleAngularAccelerationRadiansPerSecondSquared = 2 * Math.PI;
 
-    // public static final int kEncoderCPR = 1024;
-    // public static final double kWheelDiameterMeters = 0.15;
-    // public static final double kDriveEncoderDistancePerPulse =
-    // // Assumes the encoders are directly mounted on the wheel shafts
-    // (kWheelDiameterMeters * Math.PI) / (double) kEncoderCPR;
+        // public static final int kEncoderCPR = 1024;
+        // public static final double kWheelDiameterMeters = 0.15;
+        // public static final double kDriveEncoderDistancePerPulse =
+        // // Assumes the encoders are directly mounted on the wheel shafts
+        // (kWheelDiameterMeters * Math.PI) / (double) kEncoderCPR;
 
-    // public static final double kTurningEncoderDistancePerPulse =
-    // // Assumes the encoders are on a 1:1 reduction with the module shaft.
-    // (2 * Math.PI) / (double) kEncoderCPR;
-    public static final double TurningEncoderDegreesPerPulse = Math
-        .toDegrees(2. * Math.PI * ModuleType.getSteerReduction());
+        // public static final double kTurningEncoderDistancePerPulse =
+        // // Assumes the encoders are on a 1:1 reduction with the module shaft.
+        // (2 * Math.PI) / (double) kEncoderCPR;
+        public static final double TurningEncoderDegreesPerPulse = Math
+                .toDegrees(2. * Math.PI * ModuleType.getSteerReduction());
 
-    // public static final double kPModuleTurningController = 1;
+        // public static final double kPModuleTurningController = 1;
 
-    // public static final double kPModuleDriveController = 1;
-  }
+        // public static final double kPModuleDriveController = 1;
+    }
 
-  public static final class OIConstants {
-    public static final int kDriverControllerPort = 0;
-  }
+    public static final class OIConstants {
+        public static final int kDriverControllerPort = 0;
+    }
 }

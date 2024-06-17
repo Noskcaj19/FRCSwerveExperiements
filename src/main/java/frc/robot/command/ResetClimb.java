@@ -1,16 +1,17 @@
 package frc.robot.command;
 
 import edu.wpi.first.math.filter.MedianFilter;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsytems.Arms;
 
-public class ResetClimb extends Command{
+public class ResetClimb extends Command {
+    boolean leftFinished = false;
+    boolean rightFinished = false;
     private MedianFilter leftArmFilter = new MedianFilter(3);
     private MedianFilter rightArmFilter = new MedianFilter(3);
     private Arms climbSub;
 
-    public ResetClimb (Arms climbSub) {
+    public ResetClimb(Arms climbSub) {
         addRequirements(climbSub);
         this.climbSub = climbSub;
     }
@@ -25,21 +26,18 @@ public class ResetClimb extends Command{
         climbSub.rightOverride(.65);
     }
 
-    boolean leftFinished = false;
-    boolean rightFinished = false;
-
     @Override
-    public void execute(){
-        if(!leftFinished) {
+    public void execute() {
+        if (!leftFinished) {
             var leftStatus = leftArmFilter.calculate(climbSub.getLeftCurrent());
-            if(Math.abs(leftStatus) > 8){
+            if (Math.abs(leftStatus) > 8) {
                 climbSub.leftOverride(0);
                 leftFinished = true;
             }
         }
-        if(!rightFinished) {
+        if (!rightFinished) {
             var rightStatus = rightArmFilter.calculate(climbSub.getRightCurrent());
-            if(Math.abs(rightStatus) > 8){
+            if (Math.abs(rightStatus) > 8) {
                 climbSub.rightOverride(0);
                 rightFinished = true;
             }

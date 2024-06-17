@@ -6,12 +6,13 @@ import frc.robot.subsytems.Intake;
 public class AutoIntakeEndless extends Command {
 
     private Intake intakeSub;
-    public AutoIntakeEndless (Intake intakeSub){
+
+    public AutoIntakeEndless(Intake intakeSub) {
         this.intakeSub = intakeSub;
     }
 
     @Override
-    public void execute(){
+    public void execute() {
         intakeSub.smartIntake();
     }
 

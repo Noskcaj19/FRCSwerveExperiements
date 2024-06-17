@@ -2,19 +2,15 @@ package frc.robot.subsytems;
 
 import com.ctre.phoenix.motorcontrol.TalonSRXControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkLowLevel.MotorType;
-
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Arms extends SubsystemBase {
 
+    private final PIDController extentionPID = new PIDController(0, 0, 0);
     TalonSRX arm1 = new TalonSRX(27);
     TalonSRX arm2 = new TalonSRX(3);
-
-    private final PIDController extentionPID = new PIDController(0, 0, 0);
 
     // private
     public Arms() {

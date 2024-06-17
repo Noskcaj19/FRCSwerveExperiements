@@ -59,11 +59,11 @@ public class DefaultShooter extends Command {
             intakeSub.feedOff();
         }
 
-        if(secondaryController.getXButton()) {
+        if (secondaryController.getXButton()) {
             intakeSub.feedBackwards();
             shooterSub.reverseShooters();
         }
-        if(secondaryController.getXButtonReleased()){
+        if (secondaryController.getXButtonReleased()) {
             intakeSub.intakeOff();
             shooterSub.turnOff();
         }

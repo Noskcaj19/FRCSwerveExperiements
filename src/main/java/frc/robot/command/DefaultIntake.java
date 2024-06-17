@@ -1,18 +1,17 @@
 package frc.robot.command;
 
-import frc.robot.subsytems.Intake;
-import frc.robot.subsytems.Shooter;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.subsytems.Intake;
+import frc.robot.subsytems.Shooter;
 
 public class DefaultIntake extends Command {
 
@@ -35,8 +34,8 @@ public class DefaultIntake extends Command {
         mouthHasNoteTrigger.onTrue(rumble(primaryController.getHID(), .5, .25));
 
         secondaryController.leftBumper().or(primaryController.button(7))
-            .onTrue(Commands.runOnce(mouth::smartIntake))
-            .onFalse(Commands.runOnce(mouth::stopSmIntake));
+                .onTrue(Commands.runOnce(mouth::smartIntake))
+                .onFalse(Commands.runOnce(mouth::stopSmIntake));
     }
 
     public Command rumble(GenericHID controller, double intensity, double duration) {
@@ -46,11 +45,11 @@ public class DefaultIntake extends Command {
         // new WaitCommand(duration),
         // new InstantCommand(() -> controller.setRumble(RumbleType.kBothRumble, 0)));
         return Commands.startEnd(
-                () -> {
-                    System.err.println("Rumble");
-                    controller.setRumble(RumbleType.kBothRumble, intensity);
-                },
-                () -> controller.setRumble(RumbleType.kBothRumble, 0))
+                        () -> {
+                            System.err.println("Rumble");
+                            controller.setRumble(RumbleType.kBothRumble, intensity);
+                        },
+                        () -> controller.setRumble(RumbleType.kBothRumble, 0))
                 .withTimeout(duration);
     }
 
@@ -60,7 +59,7 @@ public class DefaultIntake extends Command {
     public void execute() {
         // TODO Auto-generated method stub
         // if (true) {
-            // mouth.printshtuff();
+        // mouth.printshtuff();
         // }
 
         // if (secondaryController.getLeftBumperPressed() ||

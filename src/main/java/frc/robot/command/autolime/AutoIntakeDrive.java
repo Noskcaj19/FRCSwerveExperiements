@@ -5,32 +5,33 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsytems.Intake;
 import frc.robot.subsytems.SwerveSubsystem;
 
-public class AutoIntakeDrive extends Command{
+public class AutoIntakeDrive extends Command {
     private SwerveSubsystem swerveSub;
     private Intake intakeSub;
     private Translation2d startPos;
     private double driveSpeed;
     private double goalDist;
     private double curDist;
-    public AutoIntakeDrive (SwerveSubsystem swerveSub, Intake intakeSub, double goalDistance, double driveSpeed){
+
+    public AutoIntakeDrive(SwerveSubsystem swerveSub, Intake intakeSub, double goalDistance, double driveSpeed) {
         this.intakeSub = intakeSub;
         this.swerveSub = swerveSub;
         this.driveSpeed = driveSpeed;
     }
 
     @Override
-    public void initialize(){
+    public void initialize() {
         startPos = swerveSub.getPose().getTranslation();
     }
 
     @Override
-    public void execute(){
+    public void execute() {
         intakeSub.smartIntake();
-        swerveSub.drive(driveSpeed, 0,0,false);
+        swerveSub.drive(driveSpeed, 0, 0, false);
     }
 
     @Override
-    public void end(boolean interrupted){
+    public void end(boolean interrupted) {
         intakeSub.stopSmIntake();
         swerveSub.drive(0, 0, 0, false);
     }
@@ -43,8 +44,7 @@ public class AutoIntakeDrive extends Command{
         curDist = swerveSub.getPose().getTranslation().getDistance(startPos);
         if (goalDist < curDist) {
             return true;
-        } 
-        else {
+        } else {
             return false;
         }
         // i finally get it now
@@ -55,5 +55,5 @@ public class AutoIntakeDrive extends Command{
         // :DDDD
     }
 
-    
+
 }

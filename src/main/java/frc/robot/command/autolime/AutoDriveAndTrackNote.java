@@ -16,18 +16,15 @@ import frc.robot.subsytems.SwerveSubsystem;
 
 public class AutoDriveAndTrackNote extends Command {
 
+    SlewRateLimiter slew = new SlewRateLimiter(0.2);
+    MedianFilter horizontalFilter = new MedianFilter(3);
+    SlewRateLimiter turnLimit = new SlewRateLimiter(1);
     private SwerveSubsystem swerveSub;
     private double goalDistance;
     private double speed;
     private Translation2d startPosition;
-    SlewRateLimiter slew = new SlewRateLimiter(0.2);
-
-    MedianFilter horizontalFilter = new MedianFilter(3);
     private ProfiledPIDController rotationPid;
     private int time;
-    final double getHorizontalOffset() {
-        return horizontalFilter.calculate(LimelightHelpers.getTX("limelight-front"));
-    }
 
     public AutoDriveAndTrackNote(SwerveSubsystem swerveSub, double goalDistance, double speed) {
 
@@ -37,13 +34,17 @@ public class AutoDriveAndTrackNote extends Command {
         this.speed = speed;
         // this.slew = slew;
         rotationPid = new ProfiledPIDController(0.03, 0, 0,
-        // horizontalPid = new ProfiledPIDController(kuh*.6, 0, tuh*.125,
-        new TrapezoidProfile.Constraints(Constants.DriveConstants.MaxVelocityMetersPerSecond / 3, 3/1.5));
+                // horizontalPid = new ProfiledPIDController(kuh*.6, 0, tuh*.125,
+                new TrapezoidProfile.Constraints(Constants.DriveConstants.MaxVelocityMetersPerSecond / 3, 3 / 1.5));
 
     }
 
     public AutoDriveAndTrackNote(Intake intakeSub) {
         //TODO Auto-generated constructor stub
+    }
+
+    final double getHorizontalOffset() {
+        return horizontalFilter.calculate(LimelightHelpers.getTX("limelight-front"));
     }
 
     @Override
@@ -53,20 +54,19 @@ public class AutoDriveAndTrackNote extends Command {
         time = 0;
     }
 
-SlewRateLimiter turnLimit = new SlewRateLimiter(1);
     @Override
     public void execute() {
         // drive forqard
         var autoRotPercent = 0.0;
         if (LimelightHelpers.getTV("limelight-front")) {
             autoRotPercent = rotationPid.calculate(getHorizontalOffset());
-            autoRotPercent = MathUtil.clamp(autoRotPercent, -DriveConstants.MaxVelocityMetersPerSecond/5, DriveConstants.MaxVelocityMetersPerSecond/5);
+            autoRotPercent = MathUtil.clamp(autoRotPercent, -DriveConstants.MaxVelocityMetersPerSecond / 5, DriveConstants.MaxVelocityMetersPerSecond / 5);
 
-            autoRotPercent= turnLimit.calculate(autoRotPercent/DriveConstants.MaxAngularVelocityRadiansPerSecond);
+            autoRotPercent = turnLimit.calculate(autoRotPercent / DriveConstants.MaxAngularVelocityRadiansPerSecond);
         }
 
         NetworkTableInstance.getDefault().getEntry("/Shuffleboard/Tune/Commanded Speed").setDouble(speed);
-        var ss=slew.calculate(speed);
+        var ss = slew.calculate(speed);
         NetworkTableInstance.getDefault().getEntry("/Shuffleboard/Tune/Limited Speed").setDouble(ss);
         swerveSub.drive(ss, 0, autoRotPercent, false);
         // hird

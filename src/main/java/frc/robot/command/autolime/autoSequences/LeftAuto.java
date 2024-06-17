@@ -1,13 +1,8 @@
-
 package frc.robot.command.autolime.autoSequences;
 
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import frc.robot.command.autolime.AutoAlignTags;
 import frc.robot.command.autolime.AutoDrive;
-import frc.robot.command.autolime.AutoIntake;
-import frc.robot.command.autolime.AutoIntakeDrive;
 import frc.robot.command.autolime.AutoRotate;
 import frc.robot.command.autolime.AutoShoot;
 import frc.robot.subsytems.Intake;
@@ -38,8 +33,10 @@ public class LeftAuto extends SequentialCommandGroup {
                 new AutoShoot(shooterSub, intakeSub).withTimeout(3),
                 new AutoDrive(swerveSub, 0.3, 0.2).withTimeout(3),
                 new AutoRotate(swerveSub, 25, 0.1).withTimeout(3),
-                new AutoDrive(swerveSub, 5, 0.3), 
-                new InstantCommand(()->{swerveSub.zeroYaw();},swerveSub)
+                new AutoDrive(swerveSub, 5, 0.3),
+                new InstantCommand(() -> {
+                    swerveSub.zeroYaw();
+                }, swerveSub)
         );
     }
 }

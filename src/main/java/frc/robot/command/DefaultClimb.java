@@ -2,14 +2,13 @@ package frc.robot.command;
 
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsytems.Arms;
 
 public class DefaultClimb extends Command {
 
+    boolean status = false;
     private Joystick joy;
     private Arms climbSub;
-    boolean status = false;
 
     public DefaultClimb(Joystick inJoy, Arms climbSub) {
         addRequirements(climbSub);
@@ -51,11 +50,9 @@ public class DefaultClimb extends Command {
 
         if (joy.getPOV() == 180) {
             climbSub.armsUp();
-        } 
-        else if (joy.getPOV() == 0) {
+        } else if (joy.getPOV() == 0) {
             climbSub.armsDown();
-        }
-        else {
+        } else {
             climbSub.turnOff();
         }
     }

@@ -1,19 +1,17 @@
 package frc.robot.command.autolime;
 
-import com.kauailabs.navx.frc.AHRS;
-
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsytems.SwerveSubsystem;
 
 public class AutoRotate extends Command {
 
-private SwerveSubsystem swerveSub;
-private double goalYaw;
-private double turnSpeed;
+    private SwerveSubsystem swerveSub;
+    private double goalYaw;
+    private double turnSpeed;
 
 // private boolean inverted;
 
-    public AutoRotate(SwerveSubsystem swerveSub, double goalYaw, double turnSpeed){
+    public AutoRotate(SwerveSubsystem swerveSub, double goalYaw, double turnSpeed) {
 
         addRequirements(swerveSub);
         this.swerveSub = swerveSub;
@@ -23,15 +21,16 @@ private double turnSpeed;
     }
 
     @Override
-    public void initialize(){
-        if(goalYaw < 0){
+    public void initialize() {
+        if (goalYaw < 0) {
             turnSpeed = -turnSpeed;
         }
         swerveSub.zeroYaw();
-       
+
     }
+
     @Override
-    public void execute(){
+    public void execute() {
         swerveSub.drive(0, 0, turnSpeed, false, 0, 0);
     }
 
@@ -42,21 +41,19 @@ private double turnSpeed;
 
 
     @Override
-    public boolean isFinished(){
+    public boolean isFinished() {
 
         double tempGY;
         double tempCY;
         double currentYaw = swerveSub.getYaw();
-        if(goalYaw < 0){
+        if (goalYaw < 0) {
             tempGY = -goalYaw;
-        }
-        else{
+        } else {
             tempGY = goalYaw;
         }
-        if(currentYaw < 0){
+        if (currentYaw < 0) {
             tempCY = -currentYaw;
-        }
-        else{
+        } else {
             tempCY = currentYaw;
         }
         //yeah i dunno
@@ -64,11 +61,10 @@ private double turnSpeed;
         // -97 -> 97 
         // 60 -> 60
         // 97 > 90 -> true 
-        
-        if (tempGY <= tempCY){
+
+        if (tempGY <= tempCY) {
             return true;
-        }
-        else{
+        } else {
             return false;
         }
 

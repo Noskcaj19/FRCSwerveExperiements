@@ -1,5 +1,6 @@
 package frc.robot.command.autolime;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -7,7 +8,6 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
 import frc.robot.subsytems.SwerveSubsystem;
-import edu.wpi.first.math.MathUtil;
 
 public class PIDAutodrive extends Command {
 
@@ -22,7 +22,7 @@ public class PIDAutodrive extends Command {
         addRequirements(swerveSub);
         this.swerveSub = swerveSub;
         this.point = point;
-        
+
         xPID.setGoal(point.getX());
         yPID.setGoal(point.getY());
 
@@ -40,7 +40,7 @@ public class PIDAutodrive extends Command {
         var xSet = xPID.calculate(relativePose.getX());
         var ySet = yPID.calculate(relativePose.getY());
 
-        xSet = MathUtil.clamp(xSet, -Constants.DriveConstants.MaxVelocityMetersPerSecond / 2,  Constants.DriveConstants.MaxVelocityMetersPerSecond/ 2);
+        xSet = MathUtil.clamp(xSet, -Constants.DriveConstants.MaxVelocityMetersPerSecond / 2, Constants.DriveConstants.MaxVelocityMetersPerSecond / 2);
         ySet = MathUtil.clamp(ySet, -Constants.DriveConstants.MaxVelocityMetersPerSecond / 2, Constants.DriveConstants.MaxVelocityMetersPerSecond / 2);
 
         swerveSub.drive(xSet / Constants.DriveConstants.MaxVelocityMetersPerSecond, ySet / Constants.DriveConstants.MaxVelocityMetersPerSecond, 0, false);
