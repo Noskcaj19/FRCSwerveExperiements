@@ -46,8 +46,9 @@ public class AutoAlignTags extends Command {
 
         // the robot cant like run into the limelight he needs to be close but not too
         // close omg im gonna die
-        distancePID.setGoal(1.5);
+        distancePID.setGoal(-1.5);
         distancePID.setIntegratorRange(-15, 15);
+        xPID.setGoal(0);
         xPID.setIntegratorRange(-15, 15);
     }
 
@@ -58,7 +59,8 @@ public class AutoAlignTags extends Command {
     final Optional<Pose3d> getSpace() {
         LimelightHelpers.LimelightResults llresults = LimelightHelpers.getLatestResults("limelight-back");
 
-        var target = Stream.of(llresults.targets_Fiducials).filter(f -> f.fiducialID == 7).findFirst();
+        var target = Stream.of(llresults.targets_Fiducials).filter(f -> f.fiducialID == 7 || f.fiducialID == 4)
+                .findFirst();
         // var target = Stream.of(LimelightHelpers.getRawFiducials("limelight-back"))
         //     .filter(f -> f.id == 7)
         //     .findFirst();
@@ -86,7 +88,7 @@ public class AutoAlignTags extends Command {
             return false;
         }
         var target = target_o.get();
-        if ((target.getZ() < 1.55 && target.getZ() > 1.4) && (Math.abs(target.getX()) < 0.2)) {
+        if ((target.getZ() > -1.55 && target.getZ() < -1.4) && (Math.abs(target.getX()) < 0.2)) {
             return true;
         } else {
             return false;
@@ -95,7 +97,7 @@ public class AutoAlignTags extends Command {
 
     @Override
     public void initialize() {
-        distancePID.reset(1.5);
+        distancePID.reset(-1.5);
         xPID.reset(0);
 
     }
@@ -112,15 +114,16 @@ public class AutoAlignTags extends Command {
             // if (!(id == 7 || id == 4)) { return; }
             // backTagID = LimelightHelpers.getFiducialID("limelight-back");
             // double xOff = -xPID.calculate(getZontal());
-            var rot = xPID.calculate(target.getX());
+            var rot = -xPID.calculate(target.getX());
             rot = MathUtil.clamp(rot, -DriveConstants.MaxVelocityMetersPerSecond / 5, DriveConstants.MaxVelocityMetersPerSecond / 5);
             // var xOff = 0.0;
 
             var df = NetworkTableInstance.getDefault();
             df.getEntry("/Shuffleboard/Tune/LimeZ").setDouble(target.getZ());
-            double yOff = distancePID.calculate(target.getZ());
-            yOff = MathUtil.clamp(yOff, -DriveConstants.MaxVelocityMetersPerSecond / 3.5, DriveConstants.MaxVelocityMetersPerSecond / 3.5);
+            double yOff = -distancePID.calculate(target.getZ());
             df.getEntry("/Shuffleboard/Tune/DistancePID").setDouble(yOff);
+            yOff = MathUtil.clamp(yOff, -DriveConstants.MaxVelocityMetersPerSecond / 3.5,
+                    DriveConstants.MaxVelocityMetersPerSecond / 3.5);
             // figure out how to use an array, which value of the array am i using??
 
             // double rot = -distancePID.calculate(getSpace(4));
